@@ -9,6 +9,9 @@ services:
       - ./backend/app:/app
     environment:
       - DATABASE_URL=postgresql://user:password@db/mydatabase
+      - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}
+    env_file:
+      - .env
     depends_on:
       - db
     command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
@@ -35,6 +38,8 @@ services:
       - /app/node_modules
     environment:
       - CHOKIDAR_USEPOLLING=true
-
+      - REACT_APP_STRIPE_PUBLISHABLE_KEY=${STRIPE_PUBLISHABLE_KEY}
+    env_file:
+      - .env
 volumes:
   postgres_data:

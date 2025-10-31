@@ -1,16 +1,36 @@
 import React, { useState } from 'react';
 import { CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
+import Button from '@mui/material/Button';
 
 interface PaymentFormProps {
     clientSecret: string;
     onSuccess: () => void;
+    onCancel: () => void;
 }
 
-const PaymentForm: React.FC<PaymentFormProps> = ({ clientSecret, onSuccess }) => {
+const PaymentForm: React.FC<PaymentFormProps> = ({ clientSecret, onSuccess, onCancel }) => {
     const stripe = useStripe();
     const elements = useElements();
     const [isProcessing, setIsProcessing] = useState(false);
     const [error, setError] = useState<string | null>(null);
+
+    const CARD_ELEMENT_OPTIONS = {
+        style: {
+            base: {
+                fontSize: '16px',
+                color: '#32325d',
+                fontFamily: '"Helvetica Neue", Helvetica, sans-serif',
+                '::placeholder': {
+                    color: '#aab7c4',
+                },
+                padding: '12px',
+            },
+            invalid: {
+                color: '#fa755a',
+                iconColor: '#fa755a',
+            },
+        },
+    };
 
     const handleSubmit = async (event: React.FormEvent) => {
         event.preventDefault();
@@ -20,6 +40,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ clientSecret, onSuccess }) =>
         }
 
         setIsProcessing(true);
+        setError(null);
 
         const { error, paymentIntent } = await stripe.confirmCardPayment(clientSecret, {
             payment_method: {
@@ -37,12 +58,43 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ clientSecret, onSuccess }) =>
     };
 
     return (
-        <form onSubmit={handleSubmit}>
-            <CardElement />
-            <button disabled={isProcessing || !stripe || !elements} type="submit">
-                {isProcessing ? "Processing..." : "Pay"}
-            </button>
-            {error && <div>{error}</div>}
+        <form onSubmit={handleSubmit} className="payment-form">
+            <div style={{ 
+                padding: '12px', 
+                border: '1px solid #ccc', 
+                borderRadius: '4px',
+                backgroundColor: '#fff'
+            }}>
+                <CardElement options={CARD_ELEMENT_OPTIONS} />
+            </div>
+            
+            {error && (
+                <div style={{ color: '#fa755a', fontSize: '14px' }}>
+                    {error}
+                </div>
+            )}
+            
+            <div className="payment-buttons">
+                <Button
+                    type="submit"
+                    variant="contained"
+                    color="primary"
+                    fullWidth
+                    disabled={isProcessing || !stripe || !elements}
+                >
+                    {isProcessing ? "Processing..." : "Pay"}
+                </Button>
+                <Button
+                    type="button"
+                    variant="outlined"
+                    color="secondary"
+                    fullWidth
+                    onClick={onCancel}
+                    disabled={isProcessing}
+                >
+                    Cancel
+                </Button>
+            </div>
         </form>
     );
 };

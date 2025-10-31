@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from sqlalchemy.orm import Session
 from fastapi import HTTPException
 import models, schemas, security
@@ -76,3 +78,91 @@ def update_order_status(db: Session, order_id: int, status: str):
         db.commit()
         db.refresh(db_order)
     return db_order
+
+
+# Inventory Management Functions
+
+def check_inventory(db: Session, order_id: int) -> bool:
+    """
+    Check if there's sufficient inventory for all items in an order.
+    Returns True if all items are available, False otherwise.
+    """
+    order = get_order(db, order_id)
+    if not order:
+        return False
+
+    for item in order.items:
+        product = db.query(models.Product).filter(models.Product.id == item.product_id).first()
+        if not product or product.inventory_count < item.quantity:
+            return False
+
+    return True
+
+
+def allocate_inventory(db: Session, order_id: int) -> bool:
+    """
+    Reduce inventory counts for all items in an order.
+    Returns True if successful, False if inventory insufficient.
+    """
+    order = get_order(db, order_id)
+    if not order:
+        return False
+
+    # Check inventory first
+    if not check_inventory(db, order_id):
+        return False
+
+    # Allocate (reduce) inventory
+    for item in order.items:
+        product = db.query(models.Product).filter(models.Product.id == item.product_id).first()
+        if product:
+            product.inventory_count -= item.quantity
+
+    db.commit()
+    return True
+
+
+def release_inventory(db: Session, order_id: int) -> bool:
+    """
+    Return inventory to stock if order is cancelled.
+    """
+    order = get_order(db, order_id)
+    if not order:
+        return False
+
+    for item in order.items:
+        product = db.query(models.Product).filter(models.Product.id == item.product_id).first()
+        if product:
+            product.inventory_count += item.quantity
+
+    db.commit()
+    return True
+
+
+# Mock notification functions (would integrate with email service in production)
+
+def notify_fulfillment(order_id: int) -> dict:
+    """
+    Mock function to notify fulfillment team.
+    In production, this would integrate with a fulfillment system or send emails.
+    """
+    print(f"[FULFILLMENT] Order #{order_id} ready for fulfillment")
+    return {
+        "status": "notified",
+        "order_id": order_id,
+        "timestamp": datetime.now().isoformat()
+    }
+
+
+def send_confirmation(order_id: int, customer_email: str) -> dict:
+    """
+    Mock function to send order confirmation email.
+    In production, this would use SendGrid, AWS SES, etc.
+    """
+    print(f"[EMAIL] Sending confirmation for Order #{order_id} to {customer_email}")
+    return {
+        "status": "sent",
+        "order_id": order_id,
+        "email": customer_email,
+        "timestamp": datetime.now().isoformat()
+    }

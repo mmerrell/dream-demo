@@ -12,16 +12,23 @@ body {
 .App-header {
     display: flex;
     align-items: center;
-    gap: 1rem;
+    justify-content: space-between; /* This pushes items to the edges */
     padding: 1rem;
     background-color: #282c34;
     color: white;
 }
 
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
 .logo {
-    height: 100px;
+    height: 50px;
     width: auto;
 }
+
 .App {
     text-align: center;
 }
@@ -305,8 +312,38 @@ hr {
     left: 50%;
     transform: translate(-50%, -50%);
     background: white;
-    padding: 40px;
-    border-radius: 8px;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    padding: 32px;
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
     z-index: 1000;
+    min-width: 400px;
+    max-width: 500px;
+}
+
+.payment-modal h3 {
+    margin-top: 0;
+    margin-bottom: 24px;
+    color: #333;
+}
+
+.payment-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+}
+
+.payment-form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.payment-buttons {
+    display: flex;
+    gap: 12px;
+    margin-top: 16px;
 }

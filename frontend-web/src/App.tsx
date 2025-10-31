@@ -3,6 +3,8 @@ import { getProducts } from './services/productService';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
 import Chip from '@mui/material/Chip';
+import { Elements } from '@stripe/react-stripe-js';
+import { loadStripe } from '@stripe/stripe-js';
 import {
     register,
     login,
@@ -18,6 +20,9 @@ import { Product } from './services/productService';
 import PaymentForm from './components/PaymentForm';
 import './App.css';
 
+// Add this RIGHT AFTER your imports, BEFORE the App component
+const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY!);
+
 function App() {
     // App State
     const [products, setProducts] = useState<Product[]>([]);
@@ -29,7 +34,9 @@ function App() {
     const [clientSecret, setClientSecret] = useState<string | null>(null);
 
     // Auth State
-    const [token, setToken] = useState<string | null>(null);
+    const [token, setToken] = useState<string | null>(
+        localStorage.getItem('authToken')  // <-- Updated this line
+    );
     const [currentUser, setCurrentUser] = useState<User | null>(null);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -83,6 +90,7 @@ function App() {
         try {
             const res = await login(formData);
             setToken(res.access_token);
+            localStorage.setItem('authToken', res.access_token); // Add this line
             alert('Login successful!');
         }
         catch (error) { alert('Login failed.'); }
@@ -90,8 +98,14 @@ function App() {
 
     const handleGetMe = async () => {
         if (!token) return;
-        try { setCurrentUser(await getCurrentUser(token)); }
-        catch (error) { alert('Session expired. Please log in again.'); setToken(null); }
+        try {
+            setCurrentUser(await getCurrentUser(token));
+        }
+        catch (error) {
+            alert('Session expired. Please log in again.');
+            setToken(null);
+            localStorage.removeItem('authToken'); // Add this line
+        }
     };
 
     const handleGetOrders = async () => {
@@ -151,13 +165,19 @@ function App() {
     return (
         <div className="App">
             <header className="App-header">
-                <img src="/logo.png" alt="Flower Shop Logo" className="logo" />
-                <h1>Flower Shop</h1>
+                <div className="header-left">
+                    <img src="/logo.png" alt="Flower Shop Logo" className="logo" />
+                    <h1>Flower Shop</h1>
+                </div>
                 {token && (
                     <Button
                         variant="outlined"
                         color="inherit"
-                        onClick={() => { setToken(null); setCurrentUser(null); }}
+                        onClick={() => {
+                            setToken(null);
+                            setCurrentUser(null);
+                            localStorage.removeItem('authToken');
+                        }}
                     >
                         Logout
                     </Button>
@@ -331,22 +351,38 @@ function App() {
 
                 {/* Payment Modal */}
                 {selectedOrder && clientSecret && (
-                    <div className="payment-modal">
-                        <h3>Pay for Order #{selectedOrder.id}</h3>
-                        <PaymentForm
-                            clientSecret={clientSecret}
-                            onSuccess={() => {
-                                alert('Payment successful!');
-                                updateOrderStatus(selectedOrder.id, "paid", token!);
-                                setSelectedOrder(null);
-                                setClientSecret(null);
-                                handleGetOrders();
-                            }}
-                        />
-                        <button onClick={() => { setSelectedOrder(null); setClientSecret(null); }}>
-                            Cancel
-                        </button>
-                    </div>
+                    <>
+                        <div className="payment-modal-overlay" onClick={() => {
+                            setSelectedOrder(null);
+                            setClientSecret(null);
+                        }} />
+                        <div className="payment-modal">
+                            <h3>Pay for Order #{selectedOrder.id}</h3>
+                            <Elements stripe={stripePromise}>
+                                <PaymentForm
+                                    clientSecret={clientSecret}
+                                    onSuccess={() => {
+                                        alert('Payment successful!');
+                                        fetch(`http://localhost:8000/orders/${selectedOrder.id}/process-payment`, {
+                                            method: 'POST',
+                                            headers: {
+                                                'Authorization': `Bearer ${token}`,
+                                            }
+                                        }).then(res => res.json())
+                                          .then(data => console.log('Order processed:', data));
+
+                                        setSelectedOrder(null);
+                                        setClientSecret(null);
+                                        handleGetOrders();
+                                    }}
+                                    onCancel={() => {
+                                        setSelectedOrder(null);
+                                        setClientSecret(null);
+                                    }}
+                                />
+                            </Elements>
+                        </div>
+                    </>
                 )}
             </main>
 

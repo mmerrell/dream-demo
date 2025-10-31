@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Depends, HTTPException, status
+from fastapi import FastAPI, Depends, HTTPException, status, Request
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from typing import List
@@ -113,6 +113,7 @@ def create_payment(request: schemas.PaymentIntentCreateRequest, db: Session = De
             amount=total_amount_in_cents,
             currency='usd',
             automatic_payment_methods={"enabled": True},
+            metadata={"order_id": str(request.order_id)}  # Add this line
         )
         return {"client_secret": intent.client_secret}
     except Exception as e:
@@ -155,3 +156,106 @@ def read_products(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)
 def read_root():
     """A welcome message for the API root."""
     return {"message": "Welcome to the Dream Demo Flower Shop API!"}
+
+@app.post("/orders/{order_id}/process-payment")
+def process_order_payment(order_id: int, db: Session = Depends(get_db),
+                          current_user: models.User = Depends(get_current_user)):
+    """
+    Process payment and complete order workflow.
+    Called after successful Stripe payment.
+    """
+    order = crud.get_order(db, order_id)
+    if not order or order.owner_id != current_user.id:
+        raise HTTPException(status_code=404, detail="Order not found")
+
+    result = process_payment(db, order_id)
+
+    if result["status"] == "error":
+        raise HTTPException(status_code=400, detail=result["message"])
+
+    return result
+
+@app.post("/webhook/stripe")
+async def stripe_webhook(request: Request, db: Session = Depends(get_db)):
+    """
+    Handle Stripe webhook events for payment processing.
+    This is called by Stripe when payment events occur.
+    """
+    payload = await request.body()
+    sig_header = request.headers.get('stripe-signature')
+
+    try:
+        # In production, verify the webhook signature
+        # event = stripe.Webhook.construct_event(payload, sig_header, webhook_secret)
+
+        # For demo purposes, just parse the JSON
+        import json
+        event = json.loads(payload)
+
+        if event['type'] == 'payment_intent.succeeded':
+            payment_intent = event['data']['object']
+            # Extract order_id from metadata (we'd need to add this when creating payment intent)
+            order_id = payment_intent.get('metadata', {}).get('order_id')
+
+            if order_id:
+                # Process the successful payment
+                result = process_payment(db, int(order_id))
+                return {"status": "success", "result": result}
+
+        return {"status": "ignored"}
+
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+def process_payment(db: Session, order_id: int) -> dict:
+    """
+    Complete payment processing workflow:
+    1. Update order status to 'paid'
+    2. Check inventory availability
+    3. Allocate inventory
+    4. Notify fulfillment
+    5. Send confirmation email
+    """
+    order = crud.get_order(db, order_id)
+    if not order:
+        return {"status": "error", "message": "Order not found"}
+
+    # Update order status
+    order = crud.update_order_status(db, order_id, "paid")
+
+    # Check inventory
+    if not crud.check_inventory(db, order_id):
+        crud.update_order_status(db, order_id, "payment_failed")
+        return {
+            "status": "error",
+            "message": "Insufficient inventory",
+            "order_id": order_id
+        }
+
+    # Allocate inventory
+    if not crud.allocate_inventory(db, order_id):
+        crud.update_order_status(db, order_id, "payment_failed")
+        return {
+            "status": "error",
+            "message": "Failed to allocate inventory",
+            "order_id": order_id
+        }
+
+    # Update status to processing
+    crud.update_order_status(db, order_id, "processing")
+
+    # Notify fulfillment team
+    fulfillment_result = crud.notify_fulfillment(order_id)
+
+    # Send confirmation email
+    confirmation_result = crud.send_confirmation(order_id, order.owner.email)
+
+    # Mark as complete
+    crud.update_order_status(db, order_id, "completed")
+
+    return {
+        "status": "success",
+        "order_id": order_id,
+        "fulfillment": fulfillment_result,
+        "confirmation": confirmation_result
+    }
