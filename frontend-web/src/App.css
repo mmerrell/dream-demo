@@ -9,15 +9,21 @@ body {
     margin: 0;
 }
 
-.App {
-    text-align: center;
+.App-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background-color: #282c34;
+    color: white;
 }
 
-.App-header {
-    background-color: #282c34;
-    padding: 20px;
-    color: white;
-    margin-bottom: 20px;
+.logo {
+    height: 100px;
+    width: auto;
+}
+.App {
+    text-align: center;
 }
 
 main {
@@ -26,8 +32,6 @@ main {
     padding: 20px;
     align-items: flex-start;
 }
-
-
 
 .product-form form div {
     margin-bottom: 15px;
@@ -41,22 +45,22 @@ main {
 }
 
 .product-form input {
-    width: calc(100% - 20px);
-    padding: 8px 10px;
-    border-radius: 4px;
-    border: 1px solid #ccc;
+    /*width: calc(100% - 20px);*/
+    /*padding: 8px 10px;*/
+    /*border-radius: 4px;*/
+    /*border: 1px solid #ccc;*/
 }
 
 .product-form button {
-    background-color: #61dafb;
-    color: #282c34;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 1em;
-    font-weight: bold;
-    width: 100%;
+    /*background-color: #61dafb;*/
+    /*color: #282c34;*/
+    /*border: none;*/
+    /*padding: 10px 20px;*/
+    /*border-radius: 4px;*/
+    /*cursor: pointer;*/
+    /*font-size: 1em;*/
+    /*font-weight: bold;*/
+    /*width: 100%;*/
 }
 
 .product-form button:hover {
@@ -82,11 +86,11 @@ main {
 }
 
 .auth-form input {
-    width: calc(100% - 22px);
-    padding: 10px;
-    margin-bottom: 10px;
-    border-radius: 4px;
-    border: 1px solid #ccc;
+    /*width: calc(100% - 22px);*/
+    /*padding: 10px;*/
+    /*margin-bottom: 10px;*/
+    /*border-radius: 4px;*/
+    /*border: 1px solid #ccc;*/
 }
 
 .user-info {
@@ -147,11 +151,11 @@ hr {
 }
 
 .product-footer button {
-    background-color: #61dafb;
-    border: none;
-    padding: 8px 15px;
-    border-radius: 4px;
-    cursor: pointer;
+    /*background-color: #61dafb;*/
+    /*border: none;*/
+    /*padding: 8px 15px;*/
+    /*border-radius: 4px;*/
+    /*cursor: pointer;*/
 }
 
 /* Cart Styles */
@@ -175,6 +179,50 @@ hr {
     padding: 5px 0;
 }
 
+/* Cart Item Styles */
+.cart-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px;
+    margin-bottom: 10px;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    gap: 12px;
+}
+
+.cart-item > span:first-child {
+    flex: 2;
+    font-weight: 500;
+    text-align: left;
+}
+
+.cart-item > span:nth-child(2) {
+    flex: 0 0 100px;
+    text-align: center;
+}
+.cart-item > span:nth-child(3) {
+    flex: 0 0 100px;
+    text-align: right;
+}
+
+.cart-item button {
+    min-width: 40px;
+}
+
+.cart-total {
+    display: flex;
+    justify-content: flex-end;
+    padding: 12px;
+    font-size: 1.2em;
+    border-top: 2px solid #333;
+    margin-top: 10px;
+}
+
+.place-order-btn {
+    margin-top: 12px !important;
+}
+
 .orders-container {
     width: 100%;
     background: #fff;
@@ -188,6 +236,67 @@ hr {
     list-style: none;
     padding: 10px;
     border-bottom: 1px solid #eee;
+}
+
+/* Order Styles */
+.order-card {
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 16px;
+    background: #fafafa;
+}
+
+.order-card h3 {
+    margin-top: 0;
+    color: #333;
+}
+
+.order-card p {
+    margin: 8px 0;
+}
+
+.order-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px;
+    gap: 12px;
+}
+
+.order-item-name {
+    flex: 2;
+    text-align: left;
+    font-weight: 500;
+}
+
+.order-item-qty {
+    flex: 0 0 100px;
+    text-align: center;
+    color: #666;
+}
+
+.order-item-price {
+    flex: 0 0 100px;
+    text-align: right;
+    font-weight: 600;
+    color: #2e7d32;
+}
+
+.order-items {
+    background: white;
+    padding: 12px;
+    border-radius: 4px;
+    margin: 12px 0;
+}
+
+.order-items > div {
+    padding: 8px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.order-items > div:last-child {
+    border-bottom: none;
 }
 
 .payment-modal {

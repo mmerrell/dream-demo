@@ -3,7 +3,7 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from typing import List
 from datetime import timedelta
-from jose import JWTError
+from jose import jwt, JWTError
 
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -31,6 +31,13 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# In main.py, add to your middleware or responses
+@app.middleware("http")
+async def add_no_index_header(request, call_next):
+    response = await call_next(request)
+    response.headers["X-Robots-Tag"] = "noindex, nofollow, noarchive"
+    return response
 
 # --- Authentication Dependencies ---
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")

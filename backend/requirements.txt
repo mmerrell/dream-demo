@@ -2,8 +2,10 @@ fastapi
 uvicorn[standard]
 sqlalchemy
 psycopg2-binary
-passlib[bcrypt]
+passlib==1.7.4
+bcrypt==4.0.1
 python-jose[cryptography]
 python-multipart
 strawberry-graphql[fastapi]
 stripe
+email-validator

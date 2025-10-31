@@ -1,3 +1,31 @@
-# https://www.robotstxt.org/robotstxt.html
+# Block all search engines and AI crawlers
 User-agent: *
-Disallow:
+Disallow: /
+
+# Specific AI crawlers (belt and suspenders approach)
+User-agent: GPTBot
+Disallow: /
+
+User-agent: ChatGPT-User
+Disallow: /
+
+User-agent: CCBot
+Disallow: /
+
+User-agent: anthropic-ai
+Disallow: /
+
+User-agent: Claude-Web
+Disallow: /
+
+User-agent: Google-Extended
+Disallow: /
+
+User-agent: PerplexityBot
+Disallow: /
+
+User-agent: Omgilibot
+Disallow: /
+
+User-agent: FacebookBot
+Disallow: /

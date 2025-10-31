@@ -1,6 +1,19 @@
 import React, { useState, useEffect, FormEvent } from 'react';
 import { getProducts } from './services/productService';
-import { register, login, getCurrentUser, createOrder, getOrders, createPaymentIntent, User, OrderItemCreate } from './services/apiService';
+import Button from '@mui/material/Button';
+import TextField from '@mui/material/TextField';
+import Chip from '@mui/material/Chip';
+import {
+    register,
+    login,
+    getCurrentUser,
+    createOrder,
+    getOrders,
+    createPaymentIntent,
+    User,
+    OrderItemCreate,
+    updateOrderStatus
+} from './services/apiService';
 import { Product } from './services/productService';
 import PaymentForm from './components/PaymentForm';
 import './App.css';
@@ -38,9 +51,27 @@ function App() {
         setCart(prev => new Map(prev).set(product_id, (prev.get(product_id) || 0) + 1));
     };
 
+    const removeFromCart = (product_id: number) => {
+        setCart(prev => {
+            const newCart = new Map(prev);
+            const currentQty = newCart.get(product_id) || 0;
+            if (currentQty > 1) {
+                newCart.set(product_id, currentQty - 1);
+            } else {
+                newCart.delete(product_id);
+            }
+            return newCart;
+        });
+    };
+
     const handleRegister = async (e: FormEvent) => {
         e.preventDefault();
-        try { await register({ email, password }); alert('Success! Please log in.'); } 
+        try {
+            await register({ email, password });
+            alert('Success! Please log in.');
+            setEmail('');
+            setPassword('');
+        }
         catch (error) { alert('Registration failed.'); }
     };
 
@@ -49,19 +80,23 @@ function App() {
         const formData = new FormData();
         formData.append('username', email);
         formData.append('password', password);
-        try { const res = await login(formData); setToken(res.access_token); alert('Login successful!'); } 
+        try {
+            const res = await login(formData);
+            setToken(res.access_token);
+            alert('Login successful!');
+        }
         catch (error) { alert('Login failed.'); }
     };
 
     const handleGetMe = async () => {
         if (!token) return;
-        try { setCurrentUser(await getCurrentUser(token)); } 
+        try { setCurrentUser(await getCurrentUser(token)); }
         catch (error) { alert('Session expired. Please log in again.'); setToken(null); }
     };
 
     const handleGetOrders = async () => {
         if (!token) return;
-        try { setOrders(await getOrders(token)); } 
+        try { setOrders(await getOrders(token)); }
         catch (error) { console.error("Failed to fetch orders", error); }
     };
 
@@ -72,7 +107,7 @@ function App() {
             await createOrder({ items: orderItems }, token);
             alert('Order placed successfully!');
             setCart(new Map());
-            handleGetOrders(); // Refresh orders list
+            handleGetOrders();
         } catch (error) { alert('Failed to place order.'); }
     };
 
@@ -90,28 +125,256 @@ function App() {
         return { product, quantity };
     });
 
+    const cartTotal = cartItems.reduce((sum, item) => {
+        return sum + (Number(item.product?.price) || 0) * item.quantity;
+    }, 0);
+
+    const getStatusChip = (status: string) => {
+        const statusConfig: Record<string, { color: any; icon?: string }> = {
+            pending: { color: 'warning', icon: '⏳' },
+            paid: { color: 'success', icon: '✓' },
+            completed: { color: 'info', icon: '✓✓' },
+            cancelled: { color: 'error', icon: '✗' }
+        };
+
+        const config = statusConfig[status] || { color: 'default', icon: '?' };
+
+        return (
+            <Chip
+                label={`${config.icon} ${status.toUpperCase()}`}
+                color={config.color}
+                size="small"
+            />
+        );
+    };
+
     return (
         <div className="App">
-            <header className="App-header"><h1>Flower Shop</h1></header>
+            <header className="App-header">
+                <img src="/logo.png" alt="Flower Shop Logo" className="logo" />
+                <h1>Flower Shop</h1>
+                {token && (
+                    <Button
+                        variant="outlined"
+                        color="inherit"
+                        onClick={() => { setToken(null); setCurrentUser(null); }}
+                    >
+                        Logout
+                    </Button>
+                )}
+            </header>
             <main>
                 {!token ? (
-                    <div className="auth-container">/* Login/Register Forms */</div>
+                    <div className="auth-container">
+                        <div className="auth-form">
+                            <h2>Register</h2>
+                            <form onSubmit={handleRegister}>
+                                <TextField
+                                    type="email"
+                                    label="Email"
+                                    variant="outlined"
+                                    fullWidth
+                                    margin="normal"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    required
+                                />
+                                <TextField
+                                    type="password"
+                                    label="Password"
+                                    variant="outlined"
+                                    fullWidth
+                                    margin="normal"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    required
+                                />
+                                <Button
+                                    type="submit"
+                                    variant="contained"
+                                    color="primary"
+                                    fullWidth
+                                    sx={{ mt: 2 }}
+                                >
+                                    Register
+                                </Button>
+                            </form>
+                        </div>
+                        <div className="auth-form">
+                            <h2>Login</h2>
+                            <form onSubmit={handleLogin}>
+                                <TextField
+                                    type="email"
+                                    label="Email"
+                                    variant="outlined"
+                                    fullWidth
+                                    margin="normal"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    required
+                                />
+                                <TextField
+                                    type="password"
+                                    label="Password"
+                                    variant="outlined"
+                                    fullWidth
+                                    margin="normal"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    required
+                                />
+                                <Button
+                                    type="submit"
+                                    variant="contained"
+                                    color="primary"
+                                    fullWidth
+                                    sx={{ mt: 2 }}
+                                >
+                                    Login
+                                </Button>
+                            </form>
+                        </div>
+                    </div>
                 ) : (
                     <div>
                         <h2>Welcome, {currentUser?.email}!</h2>
-                        <div className="cart-container">/* Shopping Cart UI */</div>
-                        <div className="orders-container"><h2>Your Orders</h2>{/* Orders List UI */}</div>
+
+                        {/* Shopping Cart */}
+                        <div className="cart-container">
+                            <h3>Shopping Cart</h3>
+                            {cart.size === 0 ? (
+                                <p>Your cart is empty</p>
+                            ) : (
+                                <>
+                                    {cartItems.map(({ product, quantity }) => (
+                                        product && (
+                                            <div key={product.id} className="cart-item">
+                                                <span>{product.name}</span>
+                                                <span>Qty: {quantity}</span>
+                                                <span>${(Number(product.price) * quantity).toFixed(2)}</span>
+                                                <Button
+                                                    variant="contained"
+                                                    size="small"
+                                                    onClick={() => addToCart(product.id)}
+                                                >
+                                                    +
+                                                </Button>
+                                                <Button
+                                                    variant="outlined"
+                                                    size="small"
+                                                    onClick={() => removeFromCart(product.id)}
+                                                >
+                                                    -
+                                                </Button>
+                                            </div>
+                                        )
+                                    ))}
+                                    <div className="cart-total">
+                                        <strong>Total: ${cartTotal.toFixed(2)}</strong>
+                                    </div>
+                                    <Button
+                                        onClick={handlePlaceOrder}
+                                        variant="contained"
+                                        color="success"
+                                        fullWidth
+                                        sx={{ mt: 2 }}
+                                    >
+                                        Place Order
+                                    </Button>
+                                </>
+                            )}
+                        </div>
+
+                        {/* Orders List */}
+                        <div className="orders-container">
+                            <h2>Your Orders</h2>
+                            {orders.length === 0 ? (
+                                <p>No orders yet</p>
+                            ) : (
+                                orders.map(order => (
+                                <div key={order.id} className="order-card">
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                        <h3>Order #{order.id}</h3>
+                                        {getStatusChip(order.status)}
+                                    </div>
+                                    <p><strong>Total: ${order.items.reduce((sum: number, item: any) =>
+                                        sum + (Number(item.price_at_purchase) * item.quantity), 0
+                                    ).toFixed(2)}</strong></p>
+
+                                    <div className="order-items">
+                                        {order.items.map((item: any, idx: number) => (
+                                            <div key={item.id || idx} className="order-item">
+                                                <span className="order-item-name">Product ID: {item.product_id}</span>
+                                                <span className="order-item-qty">Qty: {item.quantity}</span>
+                                                <span className="order-item-price">${Number(item.price_at_purchase).toFixed(2)}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+
+                                    {order.status === 'pending' && (
+                                        <Button
+                                            variant="contained"
+                                            color="success"
+                                            fullWidth
+                                            sx={{ mt: 2 }}
+                                            onClick={() => handlePayNow(order)}
+                                        >
+                                            Pay Now
+                                        </Button>
+                                    )}
+                                </div>
+                                ))
+                            )}
+                        </div>
                     </div>
                 )}
+
+                {/* Payment Modal */}
                 {selectedOrder && clientSecret && (
                     <div className="payment-modal">
                         <h3>Pay for Order #{selectedOrder.id}</h3>
-                        <PaymentForm clientSecret={clientSecret} onSuccess: () => { alert('Payment successful!'); updateOrderStatus(selectedOrder.id, "paid", token!); setSelectedOrder(null); setClientSecret(null); handleGetOrders(); } />
+                        <PaymentForm
+                            clientSecret={clientSecret}
+                            onSuccess={() => {
+                                alert('Payment successful!');
+                                updateOrderStatus(selectedOrder.id, "paid", token!);
+                                setSelectedOrder(null);
+                                setClientSecret(null);
+                                handleGetOrders();
+                            }}
+                        />
+                        <button onClick={() => { setSelectedOrder(null); setClientSecret(null); }}>
+                            Cancel
+                        </button>
                     </div>
                 )}
             </main>
+
             <hr />
-            <section className="inventory-section"><h2>Our Products</h2><div className="product-grid">{/* Product Grid UI */}</div></section>
+
+            {/* Products Section */}
+            <section className="inventory-section">
+                <h2>Our Products</h2>
+                <div className="product-grid">
+                    {products.map(product => (
+                        <div key={product.id} className="product-card">
+                            <h3>{product.name}</h3>
+                            <p>{product.description}</p>
+                            <p className="price">${Number(product.price).toFixed(2)}</p>
+                            <p className="inventory">In stock: {product.inventory_count}</p>
+                            {token && (
+                                <Button
+                                    variant="contained"
+                                    color="primary"
+                                    onClick={() => addToCart(product.id)}
+                                >
+                                    Add to Cart
+                                </Button>
+                            )}
+                        </div>
+                    ))}
+                </div>
+            </section>
         </div>
     );
 }

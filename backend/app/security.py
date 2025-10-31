@@ -4,7 +4,13 @@ from datetime import datetime, timedelta
 from typing import Optional
 
 # --- Password Hashing ---
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+# Use bcrypt with explicit configuration for better compatibility
+pwd_context = CryptContext(
+    schemes=["bcrypt"],
+    deprecated="auto",
+    bcrypt__default_rounds=12,
+    bcrypt__ident="2b",  # Use the 2b variant which is more standard
+)
 
 # --- JWT Configuration ---
 # In a real application, load this from a secure environment variable!
