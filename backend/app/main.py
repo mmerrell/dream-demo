@@ -207,6 +207,28 @@ async def stripe_webhook(request: Request, db: Session = Depends(get_db)):
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
+
+@app.post("/orders/{order_id}/cancel")
+def cancel_order(order_id: int, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+    """
+    Cancel a pending order and return inventory to stock.
+    """
+    order = crud.get_order(db, order_id)
+    if not order or order.owner_id != current_user.id:
+        raise HTTPException(status_code=404, detail="Order not found")
+
+    if order.status != 'pending':
+        raise HTTPException(status_code=400, detail="Only pending orders can be cancelled")
+
+    # Return inventory to stock
+    crud.release_inventory(db, order_id)
+
+    # Update order status
+    order = crud.update_order_status(db, order_id, "cancelled")
+
+    return order
+
+
 def process_payment(db: Session, order_id: int) -> dict:
     """
     Complete payment processing workflow:
@@ -215,13 +237,22 @@ def process_payment(db: Session, order_id: int) -> dict:
     3. Allocate inventory
     4. Notify fulfillment
     5. Send confirmation email
+
+    NOTE: This function simulates realistic delays between order states
+    that would occur in a production environment.
     """
+    import time
+
     order = crud.get_order(db, order_id)
     if not order:
         return {"status": "error", "message": "Order not found"}
 
-    # Update order status
+    # Update order status to paid (payment confirmed)
     order = crud.update_order_status(db, order_id, "paid")
+    print(f"[PAYMENT] Order #{order_id} payment confirmed - awaiting fulfillment")
+
+    # Simulate payment settlement delay (realistic: 1-2 seconds)
+    time.sleep(2)
 
     # Check inventory
     if not crud.check_inventory(db, order_id):
@@ -241,17 +272,26 @@ def process_payment(db: Session, order_id: int) -> dict:
             "order_id": order_id
         }
 
-    # Update status to processing
+    # Update status to processing (order being prepared/packed)
     crud.update_order_status(db, order_id, "processing")
+    print(f"[WAREHOUSE] Order #{order_id} picked and being packed")
+
+    # Simulate warehouse processing time (realistic: 5-10 seconds for demo, hours in reality)
+    time.sleep(5)
 
     # Notify fulfillment team
     fulfillment_result = crud.notify_fulfillment(order_id)
+    print(f"[SHIPPING] Order #{order_id} shipped")
+
+    # Simulate shipping/delivery time (realistic: 3 seconds for demo, days in reality)
+    time.sleep(3)
 
     # Send confirmation email
     confirmation_result = crud.send_confirmation(order_id, order.owner.email)
 
-    # Mark as complete
+    # Mark as complete (delivered)
     crud.update_order_status(db, order_id, "completed")
+    print(f"[DELIVERY] Order #{order_id} delivered successfully")
 
     return {
         "status": "success",

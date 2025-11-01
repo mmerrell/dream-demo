@@ -50,6 +50,52 @@ This document tracks known bugs in the Dream Demo Flower Shop application. These
   - Add a notification queue for multiple messages
 ---
 
+### Inventory Exceeds Available Stock - Poor Error Handling
+- **Status**: 🔴 Unfixed
+- **Severity**: High
+- **Component**: Backend/Frontend - Order Creation
+- **Description**: When placing an order that exceeds available inventory, the system creates a $0 order with 0 quantity items and only shows generic "Failed to place order" alert. The phantom order doesn't appear until page refresh.
+- **Location**: Backend - `crud.py` order creation, Frontend - `App.tsx` handlePlaceOrder
+- **Reproduction Steps**:
+  1. Find a product with limited inventory (e.g., 5 in stock)
+  2. Add 10 of that item to cart
+  3. Click "Place Order"
+  4. Observe generic error alert
+  5. Refresh page - see $0 order created
+- **Expected Behavior**: Should validate inventory before creating order, show specific error message about which items are out of stock, prevent order creation
+- **Current Behavior**: Creates invalid $0 order, generic error message, order not visible until refresh
+
+### Payment Fails for $0 Orders
+- **Status**: 🔴 Unfixed
+- **Severity**: Medium
+- **Component**: Backend - Payment Processing
+- **Description**: $0 orders created by inventory bugs show "Failed to initiate payment" but remain in the orders list forever
+- **Location**: Backend - `main.py` create_payment_intent
+- **Reproduction Steps**:
+  1. Create a $0 order (via inventory bug)
+  2. Try to pay for it
+  3. Get "Failed to initiate payment" alert
+  4. Order remains in pending state indefinitely
+- **Expected Behavior**: Either prevent $0 orders from being created, or auto-cancel them, or allow deletion
+- **Current Behavior**: $0 orders stuck in pending state forever with no way to remove them
+
+### No Order Management - Cannot Delete/Cancel Orders
+- **Status**: 🔴 Unfixed
+- **Severity**: Medium
+- **Component**: Frontend - Order Management
+- **Description**: Users cannot delete, cancel, or modify orders once created. Invalid/test orders accumulate with no cleanup mechanism.
+- **Location**: `frontend-web/src/App.tsx` - Orders display section
+- **Reproduction Steps**:
+  1. Create any order
+  2. Observe no delete/cancel options available
+  3. Order remains in list permanently
+- **Expected Behavior**: 
+  - Pending orders should have "Cancel" button
+  - Cancelled/completed orders should be hideable/filterable
+  - Admin/user should be able to delete invalid orders
+- **Current Behavior**: All orders displayed permanently with no management options
+
+
 ## Testing Notes
 
 This application is intentionally left with bugs for educational purposes. When writing automated tests:

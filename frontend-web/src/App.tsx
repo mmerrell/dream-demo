@@ -14,7 +14,8 @@ import {
     createPaymentIntent,
     User,
     OrderItemCreate,
-    updateOrderStatus
+    updateOrderStatus,
+    cancelOrder
 } from './services/apiService';
 import { Product } from './services/productService';
 import PaymentForm from './components/PaymentForm';
@@ -90,7 +91,7 @@ function App() {
         try {
             const res = await login(formData);
             setToken(res.access_token);
-            localStorage.setItem('authToken', res.access_token); // Add this line
+            localStorage.setItem('authToken', res.access_token);
             alert('Login successful!');
         }
         catch (error) { alert('Login failed.'); }
@@ -104,7 +105,7 @@ function App() {
         catch (error) {
             alert('Session expired. Please log in again.');
             setToken(null);
-            localStorage.removeItem('authToken'); // Add this line
+            localStorage.removeItem('authToken');
         }
     };
 
@@ -132,6 +133,19 @@ function App() {
             setClientSecret(res.client_secret);
             setSelectedOrder(order);
         } catch (error) { alert('Failed to initiate payment.'); }
+    };
+
+    const handleCancelOrder = async (orderId: number) => {
+        if (!token) return;
+        if (!window.confirm('Are you sure you want to cancel this order?')) return;
+
+        try {
+            await cancelOrder(orderId, token);
+            alert('Order cancelled successfully');
+            handleGetOrders();
+        } catch (error) {
+            alert('Failed to cancel order');
+        }
     };
 
     const cartItems = Array.from(cart.entries()).map(([product_id, quantity]) => {
@@ -162,6 +176,30 @@ function App() {
         );
     };
 
+    // Add this state
+    const [showCompleted, setShowCompleted] = useState(false);
+
+    const [orderFilters, setOrderFilters] = useState({
+        pending: true,
+        paid: true,
+        processing: true,
+        completed: false,
+        cancelled: false,
+        payment_failed: false
+    });
+
+    const toggleFilter = (status: keyof typeof orderFilters) => {
+        setOrderFilters(prev => ({
+            ...prev,
+            [status]: !prev[status]
+        }));
+    };
+
+    // Filter orders
+    const visibleOrders = orders.filter(order =>
+        orderFilters[order.status as keyof typeof orderFilters]
+    );
+
     return (
         <div className="App">
             <header className="App-header">
@@ -178,6 +216,7 @@ function App() {
                             setCurrentUser(null);
                             localStorage.removeItem('authToken');
                         }}
+                        aria-label="Logout from your account"
                     >
                         Logout
                     </Button>
@@ -188,7 +227,7 @@ function App() {
                     <div className="auth-container">
                         <div className="auth-form">
                             <h2>Register</h2>
-                            <form onSubmit={handleRegister}>
+                            <form onSubmit={handleRegister} aria-label="Registration form">
                                 <TextField
                                     type="email"
                                     label="Email"
@@ -198,6 +237,9 @@ function App() {
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
                                     required
+                                    slotProps={{
+                                        htmlInput: { 'aria-label': 'Email address for registration' }
+                                    }}
                                 />
                                 <TextField
                                     type="password"
@@ -208,6 +250,9 @@ function App() {
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
                                     required
+                                    slotProps={{
+                                        htmlInput: { 'aria-label': 'Password for registration' }
+                                    }}
                                 />
                                 <Button
                                     type="submit"
@@ -215,6 +260,7 @@ function App() {
                                     color="primary"
                                     fullWidth
                                     sx={{ mt: 2 }}
+                                    aria-label="Submit registration"
                                 >
                                     Register
                                 </Button>
@@ -222,7 +268,7 @@ function App() {
                         </div>
                         <div className="auth-form">
                             <h2>Login</h2>
-                            <form onSubmit={handleLogin}>
+                            <form onSubmit={handleLogin} aria-label="Login form">
                                 <TextField
                                     type="email"
                                     label="Email"
@@ -232,6 +278,9 @@ function App() {
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
                                     required
+                                    slotProps={{
+                                        htmlInput: { 'aria-label': 'Email address for login' }
+                                    }}
                                 />
                                 <TextField
                                     type="password"
@@ -242,6 +291,9 @@ function App() {
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
                                     required
+                                    slotProps={{
+                                        htmlInput: { 'aria-label': 'Password for login' }
+                                    }}
                                 />
                                 <Button
                                     type="submit"
@@ -249,6 +301,7 @@ function App() {
                                     color="primary"
                                     fullWidth
                                     sx={{ mt: 2 }}
+                                    aria-label="Submit login"
                                 >
                                     Login
                                 </Button>
@@ -276,6 +329,7 @@ function App() {
                                                     variant="contained"
                                                     size="small"
                                                     onClick={() => addToCart(product.id)}
+                                                    aria-label={`Increase quantity of ${product.name}`}
                                                 >
                                                     +
                                                 </Button>
@@ -283,6 +337,7 @@ function App() {
                                                     variant="outlined"
                                                     size="small"
                                                     onClick={() => removeFromCart(product.id)}
+                                                    aria-label={`Decrease quantity of ${product.name}`}
                                                 >
                                                     -
                                                 </Button>
@@ -298,6 +353,7 @@ function App() {
                                         color="success"
                                         fullWidth
                                         sx={{ mt: 2 }}
+                                        aria-label={`Place order for ${cart.size} items totaling $${cartTotal.toFixed(2)}`}
                                     >
                                         Place Order
                                     </Button>
@@ -308,41 +364,117 @@ function App() {
                         {/* Orders List */}
                         <div className="orders-container">
                             <h2>Your Orders</h2>
-                            {orders.length === 0 ? (
-                                <p>No orders yet</p>
+
+                            {/* Filter Buttons */}
+                            <div style={{
+                                display: 'flex',
+                                gap: '8px',
+                                marginBottom: '16px',
+                                flexWrap: 'wrap'
+                            }}>
+                                <Button
+                                    variant={orderFilters.pending ? "contained" : "outlined"}
+                                    color="warning"
+                                    size="small"
+                                    onClick={() => toggleFilter('pending')}
+                                    aria-label="Toggle pending orders"
+                                >
+                                    ⏳ Pending
+                                </Button>
+                                <Button
+                                    variant={orderFilters.paid ? "contained" : "outlined"}
+                                    color="info"
+                                    size="small"
+                                    onClick={() => toggleFilter('paid')}
+                                    aria-label="Toggle paid orders"
+                                >
+                                    💳 Paid
+                                </Button>
+                                <Button
+                                    variant={orderFilters.processing ? "contained" : "outlined"}
+                                    color="info"
+                                    size="small"
+                                    onClick={() => toggleFilter('processing')}
+                                    aria-label="Toggle processing orders"
+                                >
+                                    📦 Processing
+                                </Button>
+                                <Button
+                                    variant={orderFilters.completed ? "contained" : "outlined"}
+                                    color="success"
+                                    size="small"
+                                    onClick={() => toggleFilter('completed')}
+                                    aria-label="Toggle completed orders"
+                                >
+                                    ✓ Completed
+                                </Button>
+                                <Button
+                                    variant={orderFilters.cancelled ? "contained" : "outlined"}
+                                    color="error"
+                                    size="small"
+                                    onClick={() => toggleFilter('cancelled')}
+                                    aria-label="Toggle cancelled orders"
+                                >
+                                    ✗ Cancelled
+                                </Button>
+                                <Button
+                                    variant={orderFilters.payment_failed ? "contained" : "outlined"}
+                                    color="error"
+                                    size="small"
+                                    onClick={() => toggleFilter('payment_failed')}
+                                    aria-label="Toggle payment failed orders"
+                                >
+                                    ⚠ Payment Failed
+                                </Button>
+                            </div>
+
+                            {visibleOrders.length === 0 ? (
+                                <p>No orders to display</p>
                             ) : (
-                                orders.map(order => (
-                                <div key={order.id} className="order-card">
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                        <h3>Order #{order.id}</h3>
-                                        {getStatusChip(order.status)}
-                                    </div>
-                                    <p><strong>Total: ${order.items.reduce((sum: number, item: any) =>
-                                        sum + (Number(item.price_at_purchase) * item.quantity), 0
-                                    ).toFixed(2)}</strong></p>
+                                visibleOrders.map(order => (
+                                    <div key={order.id} className="order-card">
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                            <h3>Order #{order.id}</h3>
+                                            {getStatusChip(order.status)}
+                                        </div>
+                                        <p><strong>Total: ${order.items.reduce((sum: number, item: any) =>
+                                            sum + (Number(item.price_at_purchase) * item.quantity), 0
+                                        ).toFixed(2)}</strong></p>
 
-                                    <div className="order-items">
-                                        {order.items.map((item: any, idx: number) => (
-                                            <div key={item.id || idx} className="order-item">
-                                                <span className="order-item-name">Product ID: {item.product_id}</span>
-                                                <span className="order-item-qty">Qty: {item.quantity}</span>
-                                                <span className="order-item-price">${Number(item.price_at_purchase).toFixed(2)}</span>
+                                        <div className="order-items">
+                                            {order.items.map((item: any, idx: number) => (
+                                                <div key={item.id || idx} className="order-item">
+                                                    <span className="order-item-name">Product ID: {item.product_id}</span>
+                                                    <span className="order-item-qty">Qty: {item.quantity}</span>
+                                                    <span className="order-item-price">${Number(item.price_at_purchase).toFixed(2)}</span>
+                                                </div>
+                                            ))}
+                                        </div>
+
+                                        {order.status === 'pending' && (
+                                            <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
+                                                <Button
+                                                    variant="contained"
+                                                    color="success"
+                                                    fullWidth
+                                                    onClick={() => handlePayNow(order)}
+                                                    aria-label={`Pay now for order ${order.id} totaling $${order.items.reduce((sum: number, item: any) => 
+                                                        sum + (Number(item.price_at_purchase) * item.quantity), 0
+                                                    ).toFixed(2)}`}                                                >
+                                                    Pay Now
+                                                </Button>
+                                                <Button
+                                                    variant="outlined"
+                                                    color="error"
+                                                    fullWidth
+                                                    onClick={() => handleCancelOrder(order.id)}
+                                                    aria-label={`Cancel order ${order.id}`}
+                                                >
+                                                    Cancel Order
+                                                </Button>
                                             </div>
-                                        ))}
+                                        )}
                                     </div>
-
-                                    {order.status === 'pending' && (
-                                        <Button
-                                            variant="contained"
-                                            color="success"
-                                            fullWidth
-                                            sx={{ mt: 2 }}
-                                            onClick={() => handlePayNow(order)}
-                                        >
-                                            Pay Now
-                                        </Button>
-                                    )}
-                                </div>
                                 ))
                             )}
                         </div>
@@ -352,12 +484,25 @@ function App() {
                 {/* Payment Modal */}
                 {selectedOrder && clientSecret && (
                     <>
-                        <div className="payment-modal-overlay" onClick={() => {
-                            setSelectedOrder(null);
-                            setClientSecret(null);
-                        }} />
-                        <div className="payment-modal">
-                            <h3>Pay for Order #{selectedOrder.id}</h3>
+                        <div className="payment-modal-overlay"
+                             onClick={() => {
+                                 setSelectedOrder(null);
+                                 setClientSecret(null);
+                             }}
+                             aria-label="Close payment modal"
+                             role="button"
+                             tabIndex={0}
+                        />
+                        <div className="payment-modal"
+                            role="dialog"
+                            aria-labelledby="payment-modal-title"
+                            aria-describedby="payment-modal-description"
+                        >
+                            <h3 id="payment-modal-title">Pay for Order #{selectedOrder.id}</h3>
+                            <p id="payment-modal-description" className="sr-only">
+                                Enter your payment information to complete your order
+                            </p>
+
                             <Elements stripe={stripePromise}>
                                 <PaymentForm
                                     clientSecret={clientSecret}
@@ -397,12 +542,14 @@ function App() {
                             <h3>{product.name}</h3>
                             <p>{product.description}</p>
                             <p className="price">${Number(product.price).toFixed(2)}</p>
-                            <p className="inventory">In stock: {product.inventory_count}</p>
+                            <p className="inventory" aria-label={`${product.inventory_count} items in stock`}>
+                                In stock: {product.inventory_count}</p>
                             {token && (
                                 <Button
                                     variant="contained"
                                     color="primary"
                                     onClick={() => addToCart(product.id)}
+                                    aria-label={`Add ${product.name} to cart for $${Number(product.price).toFixed(2)}`}
                                 >
                                     Add to Cart
                                 </Button>

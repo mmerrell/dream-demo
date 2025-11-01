@@ -58,7 +58,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ clientSecret, onSuccess, onCa
     };
 
     return (
-        <form onSubmit={handleSubmit} className="payment-form">
+        <form onSubmit={handleSubmit} className="payment-form" aria-label="Payment form">
             <div style={{ 
                 padding: '12px', 
                 border: '1px solid #ccc', 
@@ -69,7 +69,10 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ clientSecret, onSuccess, onCa
             </div>
             
             {error && (
-                <div style={{ color: '#fa755a', fontSize: '14px' }}>
+                <div style={{ color: '#fa755a', fontSize: '14px' }}
+                    role="alert"
+                    aria-live="polite"
+                >
                     {error}
                 </div>
             )}
@@ -81,6 +84,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ clientSecret, onSuccess, onCa
                     color="primary"
                     fullWidth
                     disabled={isProcessing || !stripe || !elements}
+                    aria-label="Submit payment"
                 >
                     {isProcessing ? "Processing..." : "Pay"}
                 </Button>
@@ -91,6 +95,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ clientSecret, onSuccess, onCa
                     fullWidth
                     onClick={onCancel}
                     disabled={isProcessing}
+                    aria-label="Cancel payment"
                 >
                     Cancel
                 </Button>

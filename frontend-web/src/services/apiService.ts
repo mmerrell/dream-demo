@@ -66,3 +66,10 @@ export const updateOrderStatus = async (order_id: number, status: string, token:
     });
     return response.data;
 };
+
+export const cancelOrder = async (order_id: number, token: string): Promise<any> => {
+    const response = await axios.post(`${API_URL}/orders/${order_id}/cancel`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+    });
+    return response.data;
+};
