@@ -152,7 +152,7 @@ async def create_order_endpoint(
 
     order_dict = order.dict()
 
-    workflow_id = f"create-order-{current_user.id}-{int(datetime.now().timestamp())}"
+    workflow_id = f"create-order-{current_user.id}-{uuid.uuid4()}"
     handle = await temporal_client.start_workflow(
         OrderProcessingWorkflow.create_order_workflow,
         args=[order_dict, current_user.id],
