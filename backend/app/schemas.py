@@ -83,3 +83,8 @@ class Order(BaseModel):
     items: List[OrderItem] = []
 
     model_config = ConfigDict(from_attributes=True)
+
+class WorkflowStartResponse(BaseModel):
+    message: str
+    workflow_id: str
+    

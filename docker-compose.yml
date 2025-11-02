@@ -1,5 +1,4 @@
 version: '3.8'
-
 services:
   backend:
     build: ./backend
@@ -10,10 +9,14 @@ services:
     environment:
       - DATABASE_URL=postgresql://user:password@db/mydatabase
       - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}
+      - TEMPORAL_HOST=temporal:7233
     env_file:
       - .env
     depends_on:
       - db
+      - temporal
+    networks:
+      - temporal-network
     command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 
   db:
@@ -26,6 +29,8 @@ services:
       - POSTGRES_DB=mydatabase
     ports:
       - "5432:5432"
+    networks:
+      - temporal-network
 
   frontend:
     build:
@@ -41,5 +46,92 @@ services:
       - REACT_APP_STRIPE_PUBLISHABLE_KEY=${STRIPE_PUBLISHABLE_KEY}
     env_file:
       - .env
+
+  # Temporal Services
+  temporal:
+    container_name: temporal
+    depends_on:
+      - temporal-postgres
+    environment:
+      - DB=postgresql
+      - DB_PORT=5432
+      - POSTGRES_USER=temporal
+      - POSTGRES_PWD=temporal
+      - POSTGRES_SEEDS=temporal-postgres
+      - DYNAMIC_CONFIG_FILE_PATH=config/dynamicconfig/development-sql.yaml
+    image: temporalio/auto-setup:1.22.4
+    ports:
+      - "7233:7233"
+    volumes:
+      - ./temporal-config:/etc/temporal/config/dynamicconfig
+    networks:
+      - temporal-network
+
+  temporal-postgres:
+    container_name: temporal-postgres
+    environment:
+      POSTGRES_PASSWORD: temporal
+      POSTGRES_USER: temporal
+    image: postgres:13-alpine
+    ports:
+      - "5433:5432"
+    volumes:
+      - temporal_postgres_data:/var/lib/postgresql/data
+    networks:
+      - temporal-network
+
+  temporal-admin-tools:
+    container_name: temporal-admin-tools
+    depends_on:
+      - temporal
+    environment:
+      - TEMPORAL_ADDRESS=temporal:7233
+      - TEMPORAL_CLI_ADDRESS=temporal:7233
+    image: temporalio/admin-tools:1.22.4
+    stdin_open: true
+    tty: true
+    networks:
+      - temporal-network
+
+  temporal-ui:
+    container_name: temporal-ui
+    depends_on:
+      - temporal
+    environment:
+      - TEMPORAL_ADDRESS=temporal:7233
+      - TEMPORAL_CORS_ORIGINS=http://localhost:3000
+    image: temporalio/ui:2.21.3
+    ports:
+      - "8080:8080"
+    networks:
+      - temporal-network
+
+  worker:
+    build: ./backend
+    command: python -B /app/worker.py
+    volumes:
+      - ./backend/app:/app
+    environment:
+      - DATABASE_URL=postgresql://user:password@db/mydatabase
+      - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}
+      - TEMPORAL_HOST=temporal:7233
+    env_file:
+      - .env
+    depends_on:
+      - db
+      - temporal
+    networks:
+      - temporal-network
+    restart: unless-stopped
+
 volumes:
   postgres_data:
+  temporal_postgres_data:
+
+networks:
+  temporal-network:
+    driver: bridge
+  default:
+    driver: bridge
+
+

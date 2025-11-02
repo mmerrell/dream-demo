@@ -1,22 +1,43 @@
+import uuid
+from contextlib import asynccontextmanager
 from fastapi import FastAPI, Depends, HTTPException, status, Request
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from typing import List
-from datetime import timedelta
+from datetime import timedelta, datetime
 from jose import jwt, JWTError
+from temporalio.client import Client, WorkflowFailureError
+from typing import Optional
 
 from fastapi.middleware.cors import CORSMiddleware
-
 import crud, models, schemas, security, config
 import stripe
+
+from workflow import OrderProcessingWorkflow
 from database import engine, get_db
 
 models.Base.metadata.create_all(bind=engine)
+temporal_client: Optional[Client] = None
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup
+    global temporal_client
+    from temporalio.contrib.pydantic import pydantic_data_converter
+
+    temporal_client = await Client.connect(
+        "temporal:7233",
+        data_converter=pydantic_data_converter
+    )
+    print("Connected to Temporal server")
+
+    yield
 
 app = FastAPI(
     title="Dream Demo API",
     description="API for the online flower shop.",
-    version="0.1.0"
+    version="0.1.0",
+    lifespan=lifespan
 )
 
 # --- CORS Middleware ---
@@ -122,9 +143,27 @@ def create_payment(request: schemas.PaymentIntentCreateRequest, db: Session = De
 
 # --- Order Endpoints ---
 
-@app.post("/orders/", response_model=schemas.Order)
-def create_order(order: schemas.OrderCreate, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
-    return crud.create_order(db=db, order=order, user_id=current_user.id)
+
+@app.post("/orders/", response_model=schemas.WorkflowStartResponse)
+async def create_order_endpoint(
+        order: schemas.OrderCreate,
+        current_user: models.User = Depends(get_current_user)
+):
+
+    order_dict = order.dict()
+
+    workflow_id = f"create-order-{current_user.id}-{int(datetime.now().timestamp())}"
+    handle = await temporal_client.start_workflow(
+        OrderProcessingWorkflow.create_order_workflow,
+        args=[order_dict, current_user.id],
+        id=workflow_id,
+        task_queue="create-order-tasks",
+    )
+
+    return {
+        "message": "Order creation started",
+        "workflow_id": handle.id
+    }
 
 @app.post("/orders/{order_id}/update-status", response_model=schemas.Order)
 def update_order_status(order_id: int, status_update: dict, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):

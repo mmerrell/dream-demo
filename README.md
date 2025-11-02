@@ -260,6 +260,17 @@ docker-compose down -v
 - [ ] Promotional codes and discounts
 - [ ] Admin dashboard
 - [ ] Social authentication (Google/Facebook OAuth)
+- [ ] **Internationalization (i18n) - Multi-language Support**
+  - [ ] English (en-US) - default
+  - [ ] French (fr-FR)
+  - [ ] Spanish (es-ES)
+  - [ ] Arabic (ar-SA) - includes RTL layout support
+  - [ ] Japanese (ja-JP)
+  - [ ] Translation files for all UI text, labels, buttons, messages
+  - [ ] Locale-aware date/time formatting
+  - [ ] Currency display per locale
+  - [ ] Language selector in header
+  - [ ] Product names: remain in English (inventory consistency)
 
 ### Phase 5: Real-time & Communication
 - [ ] WebSocket connections for live updates
