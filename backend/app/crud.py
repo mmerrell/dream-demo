@@ -98,9 +98,7 @@ def update_order_status(db: Session, order_id: int, status: str):
         db.refresh(db_order)
     return db_order
 
-
 # Inventory Management Functions
-
 def check_inventory(db: Session, order_id: int) -> bool:
     """
     Check if there's sufficient inventory for all items in an order.
@@ -116,7 +114,6 @@ def check_inventory(db: Session, order_id: int) -> bool:
             return False
 
     return True
-
 
 def allocate_inventory(db: Session, order_id: int) -> bool:
     """

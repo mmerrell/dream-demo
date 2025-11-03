@@ -106,9 +106,27 @@ services:
     networks:
       - temporal-network
 
-  worker:
+  process-order-worker:
     build: ./backend
-    command: python -B /app/worker.py
+    command: python -B /app/process_order_worker.py
+    volumes:
+      - ./backend/app:/app
+    environment:
+      - DATABASE_URL=postgresql://user:password@db/mydatabase
+      - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}
+      - TEMPORAL_HOST=temporal:7233
+    env_file:
+      - .env
+    depends_on:
+      - db
+      - temporal
+    networks:
+      - temporal-network
+    restart: unless-stopped
+
+  process-payment-worker:
+    build: ./backend
+    command: python -B /app/process_payment_worker.py
     volumes:
       - ./backend/app:/app
     environment:

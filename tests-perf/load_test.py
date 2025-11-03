@@ -40,7 +40,7 @@ async def get_products(session, token):
 
 
 async def place_order(session, token, products, order_num):
-    """Place a single order"""
+    """Place order AND trigger payment processing"""
     # Randomly select 1-5 products
     num_items = random.randint(1, min(5, len(products)))
     selected_products = random.sample(products, num_items)
@@ -70,6 +70,23 @@ async def place_order(session, token, products, order_num):
             print(f"✅ Order {order_num}: {result.get('workflow_id')} - {duration:.2f}s")
         else:
             print(f"❌ Order {order_num} failed: {result} - {duration:.2f}s")
+
+    async with session.post(f"{API_URL}/orders/", json=order_data, headers=headers) as resp:
+        if resp.status == 200:
+            result = await resp.json()
+            order_id = result.get('order_id')  # Or however you get it from response
+
+            # NOW trigger payment processing
+            async with session.post(
+                    f"{API_URL}/orders/{order_id}/process-payment",
+                    headers=headers
+            ) as payment_resp:
+                if payment_resp.status == 200:
+                    print(f"✅ Order {order_num}: Created and processing started")
+                else:
+                    print(f"⚠️ Order {order_num}: Created but payment failed to start")
+        else:
+            print(f"❌ Order {order_num}: Failed to create")
 
         return result
 
@@ -112,6 +129,7 @@ async def main():
         print(f"   Total time: {duration:.2f}s")
         print(f"   Avg time per order: {duration / NUM_ORDERS:.2f}s")
         print(f"{'=' * 50}")
+
 
 
 if __name__ == "__main__":

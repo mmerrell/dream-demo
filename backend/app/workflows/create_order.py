@@ -4,7 +4,7 @@ from temporalio import workflow
 from temporalio.common import RetryPolicy
 
 with workflow.unsafe.imports_passed_through():
-    from activities.order_operations import create_order_activity
+    from activities.order_activities import create_order_activity
 
 DEFAULT_RETRY_POLICY = RetryPolicy(
     maximum_attempts=3,

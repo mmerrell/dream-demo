@@ -1,10 +1,11 @@
 import asyncio
+import sys
+
 from temporalio.client import Client
-from workflows.order_creation import OrderCreationWorkflow
-from activities.order_operations import create_order_activity
+from activities.order_activities import create_order_activity
 from temporalio.worker import Worker
 
-from backend.app.workflows.order_creation import OrderProcessingWorkflow
+from workflows.create_order import OrderProcessingWorkflow
 
 async def main():
     print("🔧 Starting worker initialization...", flush=True)
@@ -25,11 +26,10 @@ async def main():
         print(f"❌ ERROR: {e}", file=sys.stderr, flush=True)
         raise
 
-
     print("🚀 Worker started - listening on task queue: create-order-tasks", flush=True)
     print("Worker is now running and waiting for tasks...", flush=True)
     await worker.run()
 
 if __name__ == "__main__":
-    print("Starting worker.py...", flush=True)
+    print("Starting process_order_worker.py...", flush=True)
     asyncio.run(main())
