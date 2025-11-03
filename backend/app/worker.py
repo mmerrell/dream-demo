@@ -1,9 +1,10 @@
 import asyncio
 from temporalio.client import Client
-from activities import create_order_activity
+from workflows.order_creation import OrderCreationWorkflow
+from activities.order_operations import create_order_activity
 from temporalio.worker import Worker
 
-from workflow import OrderProcessingWorkflow
+from backend.app.workflows.order_creation import OrderProcessingWorkflow
 
 async def main():
     print("🔧 Starting worker initialization...", flush=True)

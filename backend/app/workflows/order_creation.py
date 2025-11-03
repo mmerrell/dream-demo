@@ -2,18 +2,15 @@ import asyncio
 from datetime import timedelta
 from temporalio import workflow
 from temporalio.common import RetryPolicy
-from schemas import OrderCreate, Order as OrderSchema
+
+with workflow.unsafe.imports_passed_through():
+    from activities.order_operations import create_order_activity
 
 DEFAULT_RETRY_POLICY = RetryPolicy(
     maximum_attempts=3,
     initial_interval=timedelta(seconds=1),
     maximum_interval=timedelta(seconds=10),
     backoff_coefficient=2.0,
-)
-
-with workflow.unsafe.imports_passed_through():
-    from activities import (
-        create_order_activity,
 )
 
 @workflow.defn

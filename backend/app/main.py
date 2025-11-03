@@ -4,16 +4,17 @@ from fastapi import FastAPI, Depends, HTTPException, status, Request
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from typing import List
-from datetime import timedelta, datetime
+from datetime import timedelta
 from jose import jwt, JWTError
-from temporalio.client import Client, WorkflowFailureError
+from temporalio.client import Client
 from typing import Optional
 
 from fastapi.middleware.cors import CORSMiddleware
 import crud, models, schemas, security, config
 import stripe
 
-from workflow import OrderProcessingWorkflow
+from workflows.order_creation import OrderProcessingWorkflow
+from workflows.process_payment import ProcessPaymentWorkflow
 from database import engine, get_db
 
 models.Base.metadata.create_all(bind=engine)
@@ -140,12 +141,10 @@ def create_payment(request: schemas.PaymentIntentCreateRequest, db: Session = De
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
-
 # --- Order Endpoints ---
 
-
 @app.post("/orders/", response_model=schemas.WorkflowStartResponse)
-async def create_order_endpoint(
+async def create_order(
         order: schemas.OrderCreate,
         current_user: models.User = Depends(get_current_user)
 ):
@@ -159,7 +158,6 @@ async def create_order_endpoint(
         id=workflow_id,
         task_queue="create-order-tasks",
     )
-
     return {
         "message": "Order creation started",
         "workflow_id": handle.id
@@ -177,28 +175,28 @@ def update_order_status(order_id: int, status_update: dict, db: Session = Depend
 def read_orders(db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
     return crud.get_orders_by_user(db=db, user_id=current_user.id)
 
-
 # --- Product Endpoints ---
 
 @app.post("/products/", response_model=schemas.Product)
 def create_product(product: schemas.ProductCreate, db: Session = Depends(get_db)):
     return crud.create_product(db=db, product=product)
 
-
 @app.get("/products/", response_model=List[schemas.Product])
 def read_products(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     products = crud.get_products(db, skip=skip, limit=limit)
     return products
-
 
 @app.get("/")
 def read_root():
     """A welcome message for the API root."""
     return {"message": "Welcome to the Dream Demo Flower Shop API!"}
 
-@app.post("/orders/{order_id}/process-payment")
-def process_order_payment(order_id: int, db: Session = Depends(get_db),
-                          current_user: models.User = Depends(get_current_user)):
+@app.post("/orders/{order_id}/process-payment", response_model=schemas.WorkflowStartResponse)
+async def process_order_payment(
+        order_id: int,
+        db: Session = Depends(get_db),
+        current_user: models.User = Depends(get_current_user)
+):
     """
     Process payment and complete order workflow.
     Called after successful Stripe payment.
@@ -207,12 +205,18 @@ def process_order_payment(order_id: int, db: Session = Depends(get_db),
     if not order or order.owner_id != current_user.id:
         raise HTTPException(status_code=404, detail="Order not found")
 
-    result = process_payment(db, order_id)
+    workflow_id = f"process-payment-{order_id}-{uuid.uuid4()}"
+    handle = await temporal_client.start_workflow(
+        ProcessPaymentWorkflow.process_payment_workflow,
+        args=[order_id],
+        id=workflow_id,
+        task_queue="process-payment-tasks",
+    )
 
-    if result["status"] == "error":
-        raise HTTPException(status_code=400, detail=result["message"])
-
-    return result
+    return {
+        "message": "Payment processing started",
+        "workflow_id": handle.id
+    }
 
 @app.post("/webhook/stripe")
 async def stripe_webhook(request: Request, db: Session = Depends(get_db)):
@@ -268,73 +272,3 @@ def cancel_order(order_id: int, db: Session = Depends(get_db), current_user: mod
     return order
 
 
-def process_payment(db: Session, order_id: int) -> dict:
-    """
-    Complete payment processing workflow:
-    1. Update order status to 'paid'
-    2. Check inventory availability
-    3. Allocate inventory
-    4. Notify fulfillment
-    5. Send confirmation email
-
-    NOTE: This function simulates realistic delays between order states
-    that would occur in a production environment.
-    """
-    import time
-
-    order = crud.get_order(db, order_id)
-    if not order:
-        return {"status": "error", "message": "Order not found"}
-
-    # Update order status to paid (payment confirmed)
-    order = crud.update_order_status(db, order_id, "paid")
-    print(f"[PAYMENT] Order #{order_id} payment confirmed - awaiting fulfillment")
-
-    # Simulate payment settlement delay (realistic: 1-2 seconds)
-    time.sleep(2)
-
-    # Check inventory
-    if not crud.check_inventory(db, order_id):
-        crud.update_order_status(db, order_id, "payment_failed")
-        return {
-            "status": "error",
-            "message": "Insufficient inventory",
-            "order_id": order_id
-        }
-
-    # Allocate inventory
-    if not crud.allocate_inventory(db, order_id):
-        crud.update_order_status(db, order_id, "payment_failed")
-        return {
-            "status": "error",
-            "message": "Failed to allocate inventory",
-            "order_id": order_id
-        }
-
-    # Update status to processing (order being prepared/packed)
-    crud.update_order_status(db, order_id, "processing")
-    print(f"[WAREHOUSE] Order #{order_id} picked and being packed")
-
-    # Simulate warehouse processing time (realistic: 5-10 seconds for demo, hours in reality)
-    time.sleep(5)
-
-    # Notify fulfillment team
-    fulfillment_result = crud.notify_fulfillment(order_id)
-    print(f"[SHIPPING] Order #{order_id} shipped")
-
-    # Simulate shipping/delivery time (realistic: 3 seconds for demo, days in reality)
-    time.sleep(3)
-
-    # Send confirmation email
-    confirmation_result = crud.send_confirmation(order_id, order.owner.email)
-
-    # Mark as complete (delivered)
-    crud.update_order_status(db, order_id, "completed")
-    print(f"[DELIVERY] Order #{order_id} delivered successfully")
-
-    return {
-        "status": "success",
-        "order_id": order_id,
-        "fulfillment": fulfillment_result,
-        "confirmation": confirmation_result
-    }

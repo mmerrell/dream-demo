@@ -1,0 +1,559 @@
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.5",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "metadata": {
+    "timestamp": "2025-11-03T00:00:00Z",
+    "tools": [
+      {
+        "vendor": "Sauce Labs",
+        "name": "SBOM Generator",
+        "version": "1.0.0"
+      }
+    ],
+    "component": {
+      "type": "application",
+      "bom-ref": "dreamdemo-flower-shop",
+      "name": "DreamDemo Flower Shop",
+      "version": "0.0.1",
+      "description": "Full-stack e-commerce application designed to demonstrate comprehensive testing capabilities with Sauce Labs",
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ],
+      "supplier": {
+        "name": "Sauce Labs",
+        "url": ["https://saucelabs.com"]
+      },
+      "author": "Sauce Labs Demo Team",
+      "purl": "pkg:github/saucelabs/dreamdemo-flower-shop@0.0.1"
+    },
+    "manufacture": {
+      "name": "Sauce Labs",
+      "url": ["https://saucelabs.com"]
+    }
+  },
+  "components": [
+    {
+      "type": "container",
+      "bom-ref": "frontend-container",
+      "name": "frontend",
+      "version": "0.0.1",
+      "description": "React TypeScript frontend container",
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ],
+      "properties": [
+        {
+          "name": "docker:base-image",
+          "value": "node:18-alpine"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "npm-react@19.2.0",
+      "name": "react",
+      "version": "19.2.0",
+      "purl": "pkg:npm/react@19.2.0",
+      "description": "React is a JavaScript library for building user interfaces",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "npm-react-dom@19.2.0",
+      "name": "react-dom",
+      "version": "19.2.0",
+      "purl": "pkg:npm/react-dom@19.2.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "npm-typescript@4.9.5",
+      "name": "typescript",
+      "version": "4.9.5",
+      "purl": "pkg:npm/typescript@4.9.5",
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "npm-mui-material@7.3.4",
+      "name": "@mui/material",
+      "version": "7.3.4",
+      "purl": "pkg:npm/%40mui/material@7.3.4",
+      "description": "Material-UI React components",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "npm-emotion-react@11.14.0",
+      "name": "@emotion/react",
+      "version": "11.14.0",
+      "purl": "pkg:npm/%40emotion/react@11.14.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "npm-emotion-styled@11.14.1",
+      "name": "@emotion/styled",
+      "version": "11.14.1",
+      "purl": "pkg:npm/%40emotion/styled@11.14.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "npm-stripe-react@5.3.0",
+      "name": "@stripe/react-stripe-js",
+      "version": "5.3.0",
+      "purl": "pkg:npm/%40stripe/react-stripe-js@5.3.0",
+      "description": "React components for Stripe.js and Stripe Elements",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "npm-stripe-js@8.2.0",
+      "name": "@stripe/stripe-js",
+      "version": "8.2.0",
+      "purl": "pkg:npm/%40stripe/stripe-js@8.2.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "npm-axios@1.12.2",
+      "name": "axios",
+      "version": "1.12.2",
+      "purl": "pkg:npm/axios@1.12.2",
+      "description": "Promise based HTTP client for the browser and node.js",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "npm-react-scripts@5.0.1",
+      "name": "react-scripts",
+      "version": "5.0.1",
+      "purl": "pkg:npm/react-scripts@5.0.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "npm-testing-library-react@16.3.0",
+      "name": "@testing-library/react",
+      "version": "16.3.0",
+      "purl": "pkg:npm/%40testing-library/react@16.3.0",
+      "scope": "optional",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "npm-testing-library-jest-dom@6.9.1",
+      "name": "@testing-library/jest-dom",
+      "version": "6.9.1",
+      "purl": "pkg:npm/%40testing-library/jest-dom@6.9.1",
+      "scope": "optional",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "npm-testing-library-user-event@13.5.0",
+      "name": "@testing-library/user-event",
+      "version": "13.5.0",
+      "purl": "pkg:npm/%40testing-library/user-event@13.5.0",
+      "scope": "optional",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "npm-web-vitals@2.1.4",
+      "name": "web-vitals",
+      "version": "2.1.4",
+      "purl": "pkg:npm/web-vitals@2.1.4",
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ]
+    },
+    {
+      "type": "container",
+      "bom-ref": "backend-container",
+      "name": "backend",
+      "version": "0.0.1",
+      "description": "Python FastAPI backend container",
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ],
+      "properties": [
+        {
+          "name": "docker:base-image",
+          "value": "python:3.9-slim"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pypi-fastapi",
+      "name": "fastapi",
+      "purl": "pkg:pypi/fastapi",
+      "description": "FastAPI framework, high performance, easy to learn",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pypi-uvicorn",
+      "name": "uvicorn",
+      "purl": "pkg:pypi/uvicorn",
+      "description": "ASGI server implementation",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pypi-sqlalchemy",
+      "name": "sqlalchemy",
+      "purl": "pkg:pypi/sqlalchemy",
+      "description": "Database Abstraction Library",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pypi-psycopg2-binary",
+      "name": "psycopg2-binary",
+      "purl": "pkg:pypi/psycopg2-binary",
+      "description": "PostgreSQL database adapter for Python",
+      "licenses": [
+        {
+          "license": {
+            "id": "LGPL-3.0"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pypi-passlib@1.7.4",
+      "name": "passlib",
+      "version": "1.7.4",
+      "purl": "pkg:pypi/passlib@1.7.4",
+      "description": "Comprehensive password hashing framework",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pypi-bcrypt@4.0.1",
+      "name": "bcrypt",
+      "version": "4.0.1",
+      "purl": "pkg:pypi/bcrypt@4.0.1",
+      "description": "Modern password hashing for your software and servers",
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pypi-python-jose",
+      "name": "python-jose",
+      "purl": "pkg:pypi/python-jose",
+      "description": "JOSE implementation in Python",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pypi-python-multipart",
+      "name": "python-multipart",
+      "purl": "pkg:pypi/python-multipart",
+      "description": "Multipart parser for Python",
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pypi-strawberry-graphql",
+      "name": "strawberry-graphql",
+      "purl": "pkg:pypi/strawberry-graphql",
+      "description": "Python GraphQL library based on dataclasses",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pypi-stripe",
+      "name": "stripe",
+      "purl": "pkg:pypi/stripe",
+      "description": "Stripe Python bindings",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pypi-email-validator",
+      "name": "email-validator",
+      "purl": "pkg:pypi/email-validator",
+      "description": "Email address validation library",
+      "licenses": [
+        {
+          "license": {
+            "id": "CC0-1.0"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pypi-temporalio",
+      "name": "temporalio",
+      "purl": "pkg:pypi/temporalio",
+      "description": "Temporal.io Python SDK",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "application",
+      "bom-ref": "temporal-server@1.22.4",
+      "name": "temporal-server",
+      "version": "1.22.4",
+      "purl": "pkg:docker/temporalio/auto-setup@1.22.4",
+      "description": "Temporal workflow orchestration platform",
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://temporal.io"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "application",
+      "bom-ref": "temporal-ui@2.21.3",
+      "name": "temporal-ui",
+      "version": "2.21.3",
+      "purl": "pkg:docker/temporalio/ui@2.21.3",
+      "description": "Temporal Web UI",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "application",
+      "bom-ref": "postgresql@13",
+      "name": "postgresql",
+      "version": "13.22",
+      "purl": "pkg:docker/postgres@13-alpine",
+      "description": "PostgreSQL database server",
+      "licenses": [
+        {
+          "license": {
+            "id": "PostgreSQL"
+          }
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "ref": "dreamdemo-flower-shop",
+      "dependsOn": [
+        "frontend-container",
+        "backend-container",
+        "temporal-server@1.22.4",
+        "temporal-ui@2.21.3",
+        "postgresql@13"
+      ]
+    },
+    {
+      "ref": "frontend-container",
+      "dependsOn": [
+        "npm-react@19.2.0",
+        "npm-react-dom@19.2.0",
+        "npm-typescript@4.9.5",
+        "npm-mui-material@7.3.4",
+        "npm-emotion-react@11.14.0",
+        "npm-emotion-styled@11.14.1",
+        "npm-stripe-react@5.3.0",
+        "npm-stripe-js@8.2.0",
+        "npm-axios@1.12.2",
+        "npm-react-scripts@5.0.1"
+      ]
+    },
+    {
+      "ref": "backend-container",
+      "dependsOn": [
+        "pypi-fastapi",
+        "pypi-uvicorn",
+        "pypi-sqlalchemy",
+        "pypi-psycopg2-binary",
+        "pypi-passlib@1.7.4",
+        "pypi-bcrypt@4.0.1",
+        "pypi-python-jose",
+        "pypi-python-multipart",
+        "pypi-strawberry-graphql",
+        "pypi-stripe",
+        "pypi-email-validator",
+        "pypi-temporalio"
+      ]
+    }
+  ],
+  "compositions": [
+    {
+      "aggregate": "complete",
+      "assemblies": [
+        "frontend-container",
+        "backend-container"
+      ]
+    }
+  ]
+}
