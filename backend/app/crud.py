@@ -37,6 +37,18 @@ def create_user(db: Session, user: schemas.UserCreate):
 
 # --- Order CRUD ---
 
+class InsufficientInventoryError(Exception):
+    def __init__(self, product_name: str, available: int, requested: int):
+        self.product_name = product_name
+        self.available = available
+        self.requested = requested
+        super().__init__(f"Not enough inventory for {product_name}")
+
+class ProductNotFoundError(Exception):
+    def __init__(self, product_id: int):
+        self.product_id = product_id
+        super().__init__(f"Product with id {product_id} not found")
+
 def get_order(db: Session, order_id: int):
     return db.query(models.Order).filter(models.Order.id == order_id).first()
 
@@ -49,10 +61,10 @@ def create_order_db(db: Session, order: schemas.OrderCreate, user_id: int):
     for item in order.items:
         product = get_product(db, item.product_id)
         if not product:
-            raise HTTPException(status_code=404, detail=f"Product with id {item.product_id} not found")
+            raise ProductNotFoundError(item.product_id)
         if product.inventory_count < item.quantity:
-            raise HTTPException(status_code=400, detail=f"Not enough inventory for {product.name}")
-        
+            raise InsufficientInventoryError(str(product.name), int(product.inventory_count), int(item.quantity))
+
         db_order_item = models.OrderItem(
             order_id=db_order.id,
             product_id=item.product_id,

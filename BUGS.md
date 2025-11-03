@@ -95,6 +95,36 @@ This document tracks known bugs in the Dream Demo Flower Shop application. These
   - Admin/user should be able to delete invalid orders
 - **Current Behavior**: All orders displayed permanently with no management options
 
+### Session Expiration - Poor Error Feedback on Order Placement
+- **Status**: 🔴 Unfixed
+- **Severity**: Medium
+- **Component**: Frontend - Error Handling
+- **Description**: When a user's JWT token expires and they attempt to place an order, they receive a generic "Failed to place order" alert with no indication that their session has expired or that they need to log in again. The user is left confused about why the order failed.
+- **Location**: `frontend-web/src/App.tsx` - `handlePlaceOrder()` function
+- **Reproduction Steps**:
+  1. Login and add items to cart
+  2. Wait for JWT to expire (30 minutes by default) or manually delete authToken from localStorage
+  3. Click "Place Order"
+  4. Observe generic error: "Failed to place order."
+- **Expected Behavior**: 
+  - Detect 401/403 unauthorized responses
+  - Show specific message: "Your session has expired. Please log in again."
+  - Automatically redirect to login or clear current user state
+  - Preserve cart contents if possible
+- **Current Behavior**: 
+  - Generic alert "Failed to place order."
+  - No indication of session expiration
+  - User remains on page with stale UI showing as logged in
+  - Cart contents remain but cannot be processed
+- **Backend Response**: Returns 401 Unauthorized with `{"detail":"Could not validate credentials"}`
+- **Impact**: Poor user experience, confusion about why order failed, no clear path to resolution
+- **Related Issues**: Similar problem exists for other authenticated actions (cancel order, payment, etc.)
+- **Potential Fixes**:
+  - Parse error responses and check for 401/403 status codes
+  - Add centralized error handler for authentication failures
+  - Clear auth token and redirect to login on session expiration
+  - Show user-friendly error messages based on error type
+  - Add axios/fetch interceptor to handle auth errors globally
 
 ## Testing Notes
 

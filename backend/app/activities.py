@@ -3,8 +3,7 @@ import asyncio
 from temporalio import activity
 import crud
 from database import SessionLocal
-from schemas import OrderCreate, Order as OrderSchema
-from models import Order
+from schemas import OrderCreate
 
 @activity.defn
 async def create_order_activity(order_data: dict, user_id: int) -> dict:
@@ -29,6 +28,20 @@ async def create_order_activity(order_data: dict, user_id: int) -> dict:
                 }
                 for item in order.items
             ],
+        }
+
+    except crud.ProductNotFoundError as e:
+        return {
+            "error": "product_not_found",
+            "message": str(e),
+            "product_id": e.product_id
+        }
+
+    except crud.InsufficientInventoryError as e:
+        return {
+            "error": "insufficient_inventory",
+            "message": str(e),
+            "product": e.product_name
         }
     finally:
         db.close()
