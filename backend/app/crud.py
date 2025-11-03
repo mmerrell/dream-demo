@@ -44,6 +44,13 @@ class InsufficientInventoryError(Exception):
         self.requested = requested
         super().__init__(f"Not enough inventory for {product_name}")
 
+class InventoryAllocationFailedError(Exception):
+    def __init__(self, product_name: str, available: int, requested: int):
+        self.product_name = product_name
+        self.available = available
+        self.requested = requested
+        super().__init__(f"Inventory allocation failed for {product_name}")
+
 class ProductNotFoundError(Exception):
     def __init__(self, product_id: int):
         self.product_id = product_id
@@ -162,19 +169,5 @@ def notify_fulfillment(order_id: int) -> dict:
     return {
         "status": "notified",
         "order_id": order_id,
-        "timestamp": datetime.now().isoformat()
-    }
-
-
-def send_confirmation(order_id: int, customer_email: str) -> dict:
-    """
-    Mock function to send order confirmation email.
-    In production, this would use SendGrid, AWS SES, etc.
-    """
-    print(f"[EMAIL] Sending confirmation for Order #{order_id} to {customer_email}")
-    return {
-        "status": "sent",
-        "order_id": order_id,
-        "email": customer_email,
         "timestamp": datetime.now().isoformat()
     }

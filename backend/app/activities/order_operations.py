@@ -1,6 +1,9 @@
 import asyncio
+from datetime import datetime
 
 from temporalio import activity
+import time
+
 import crud
 from database import SessionLocal
 from schemas import OrderCreate
@@ -59,32 +62,18 @@ async def process_order_payment(order_id: int) -> dict:
     NOTE: This function simulates realistic delays between order states
     that would occur in a production environment.
     """
-    import time
     db = SessionLocal()
 
     order = crud.get_order(db, order_id)
     if not order:
+        # TODO return Temporal-friendly object
         return {"status": "error", "message": "Order not found"}
 
-    # Update order status to paid (payment confirmed)
-    order = crud.update_order_status(db, order_id, "paid")
-    print(f"[PAYMENT] Order #{order_id} payment confirmed - awaiting fulfillment")
-
-    # Simulate payment settlement delay (realistic: 1-2 seconds)
-    time.sleep(2)
-
-    # Check inventory
-    if not crud.check_inventory(db, order_id):
-        crud.update_order_status(db, order_id, "payment_failed")
-        return {
-            "status": "error",
-            "message": "Insufficient inventory",
-            "order_id": order_id
-        }
-
-    # Allocate inventory
+    # 3. Allocate inventory
+    # TODO activity
     if not crud.allocate_inventory(db, order_id):
-        crud.update_order_status(db, order_id, "payment_failed")
+        await update_order_status_activity(db, order_id, "inventory_allocation_failed")
+        # TODO return Temporal-friendly object
         return {
             "status": "error",
             "message": "Failed to allocate inventory",
@@ -92,29 +81,66 @@ async def process_order_payment(order_id: int) -> dict:
         }
 
     # Update status to processing (order being prepared/packed)
-    crud.update_order_status(db, order_id, "processing")
-    print(f"[WAREHOUSE] Order #{order_id} picked and being packed")
+    # TODO activity
+    await update_order_status_activity(db, order_id,"processing")
+    activity.logger.info(f"[WAREHOUSE] Order #{order_id} picked and being packed")
 
     # Simulate warehouse processing time (realistic: 5-10 seconds for demo, hours in reality)
     time.sleep(5)
 
-    # Notify fulfillment team
+    # 4. Notify fulfillment
+    # TODO activity (this might actually be a workflow)
     fulfillment_result = crud.notify_fulfillment(order_id)
-    print(f"[SHIPPING] Order #{order_id} shipped")
+    activity.logger.info(f"[SHIPPING] Order #{order_id} shipped")
 
     # Simulate shipping/delivery time (realistic: 3 seconds for demo, days in reality)
     time.sleep(3)
 
     # Send confirmation email
-    confirmation_result = crud.send_confirmation(order_id, order.owner.email)
+    # TODO activity
+    confirmation_result = await send_confirmation_activity(order_id, order.owner.email)
 
     # Mark as complete (delivered)
-    crud.update_order_status(db, order_id, "completed")
-    print(f"[DELIVERY] Order #{order_id} delivered successfully")
+    # TODO activity
+    await update_order_status_activity(db, order_id,"completed")
+    activity.logger.info(f"[DELIVERY] Order #{order_id} delivered successfully")
 
+    # TODO return Temporal-friendly object
     return {
         "status": "success",
         "order_id": order_id,
         "fulfillment": fulfillment_result,
         "confirmation": confirmation_result
     }
+
+@activity.defn
+async def update_order_status_activity(db, order_id, status):
+    crud.update_order_status(db, order_id, status)
+
+@activity.defn
+async def check_inventory_activity(db, order_id) -> bool:
+    return crud.check_inventory(db, order_id)
+
+@activity.defn
+async def allocate_inventory_activity(db, order_id) -> bool:
+    return crud.allocate_inventory(db, order_id)
+
+@activity.defn
+async def notify_fulfillment_activity(db, order_id) -> dict:
+    return crud.notify_fulfillment(order_id)
+
+@activity.defn
+async def send_confirmation_activity(order_id: int, customer_email: str) -> dict:
+    """
+    Mock function to send order confirmation email.
+    In production, this would use SendGrid, AWS SES, etc.
+    """
+    activity.logger.info(f"[EMAIL] Sending confirmation for Order #{order_id} to {customer_email}")
+    # TODO Send the email
+    return {
+        "status": "sent",
+        "order_id": order_id,
+        "email": customer_email,
+        "timestamp": datetime.now().isoformat()
+    }
+

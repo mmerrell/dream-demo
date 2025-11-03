@@ -270,5 +270,3 @@ def cancel_order(order_id: int, db: Session = Depends(get_db), current_user: mod
     order = crud.update_order_status(db, order_id, "cancelled")
 
     return order
-
-
