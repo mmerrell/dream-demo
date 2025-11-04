@@ -20,10 +20,10 @@ This roadmap outlines the planned development across multiple sprints, showcasin
 
 ### Known Bugs (Intentional - for demo purposes)
 - 🐛 Intrusive alert() dialogs instead of proper notifications
-- 🐛 Poor session expiration messaging
-- 🐛 Duplicate email registration doesn't provide clear feedback
-- 🐛 No order cancellation functionality
-- 🐛 HTTPException used in non-HTTP contexts
+- 🐛 Poor session expiration messaging (✅ Fixed in sprint-2)
+- 🐛 Duplicate email registration doesn't provide clear feedback (✅ Fixed in sprint-2)
+- 🐛 No order cancellation functionality (✅ Fixed in sprint-2)
+- 🐛 HTTPException used in non-HTTP contexts (✅ Fixed in sprint-3)
 
 ### Documentation
 - ✅ BUGS.md created with all known issues
@@ -41,16 +41,15 @@ This roadmap outlines the planned development across multiple sprints, showcasin
 - ✅ Separate workers for different task queues
 - ✅ Activity-based architecture with proper error handling
 - ✅ Load testing infrastructure (process_pending_orders.py)
+- ✅ Order cancellation workflow
+- ✅ Improved session expiration handling
 
 ### Bug Fixes
 - ✅ InsufficientInventoryError - proper exception handling in activities
 - ✅ User-friendly exceptions throughout workflow layer
 
 ### Remaining Bugs (Deferred to Sprint 3)
-- 🐛 Session expiration error messaging
-- 🐛 Duplicate email registration feedback
 - 🐛 Intrusive alert() dialogs
-- 🐛 No order cancellation
 
 ---
 
@@ -59,20 +58,17 @@ This roadmap outlines the planned development across multiple sprints, showcasin
 
 ### Planned Features
 - [ ] Replace alert() with MUI Snackbar/Toast notifications
-- [ ] Order cancellation workflow
 - [ ] Improved session expiration handling
   - Detect 401 responses
   - Clear auth state and redirect to login
   - Preserve cart contents
 - [ ] Better error messages on duplicate email registration
-- [ ] Order filtering and search
+- ✅ Order filtering
+- [ ] Order search
 - [ ] Order status updates (real-time or polling)
 
 ### Bug Fixes
 - [ ] Fix: Intrusive alert() dialogs
-- [ ] Fix: Session expiration messaging
-- [ ] Fix: Duplicate email registration feedback
-- [ ] Fix: Add order cancellation functionality
 
 ### Testing Focus
 - End-to-end payment flows
@@ -602,3 +598,111 @@ inventory-service/
 - i18n testing across locales (Sprint 8)
 - Cross-service integration tests
 - Workflow testing strategies
+
+## 🗺 Aspirational Roadmap
+
+### Phase 1: Enhanced Infrastructure
+- [ ] AWS/GCP deployment configurations
+- [ ] Kubernetes orchestration
+- [ ] gRPC service communication
+- [ ] Kafka event streaming
+- [ ] Configuration-driven architecture (YAML-based service orchestration)
+- [ ] Microservices split: auth, products, orders, payments, notifications, inventory services
+
+### Phase 2: Observability & Analytics
+- [ ] OpenTelemetry integration
+- [ ] Grafana dashboards
+- [ ] ReportPortal.io test reporting
+- [ ] Google Analytics tracking
+- [ ] Mixpanel user analytics
+- [ ] Segment multi-destination analytics
+- [ ] Structured logging with ELK stack
+- [ ] Backtrace for production-level error monitoring
+
+### Phase 3: Payment & Inventory Expansion
+- [ ] Venmo integration
+- [ ] CashApp integration
+- [ ] PayPal integration
+- [ ] Open-source inventory management system
+- [ ] Multi-warehouse support
+- [ ] Real-time inventory updates via WebSocket
+- [ ] ShipStation/EasyPost shipping integration
+
+### Phase 4: Advanced Features
+- [ ] Feature flags (LaunchDarkly or custom)
+- [ ] A/B testing framework
+- [ ] Internationalization (i18n) - multi-language support
+- [ ] Currency conversion
+- [ ] Progressive Web App (PWA) features
+- [ ] Dark mode toggle
+- [ ] Product recommendations engine
+- [ ] Order tracking with shipping carriers
+- [ ] Customer reviews and ratings
+- [ ] Promotional codes and discounts
+- [ ] Admin dashboard
+- [ ] Social authentication (Google/Facebook OAuth)
+- [ ] **Internationalization (i18n) - Multi-language Support**
+  - [ ] English (en-US) - default
+  - [ ] French (fr-FR)
+  - [ ] Spanish (es-ES)
+  - [ ] Arabic (ar-SA) - includes RTL layout support
+  - [ ] Japanese (ja-JP)
+  - [ ] Translation files for all UI text, labels, buttons, messages
+  - [ ] Locale-aware date/time formatting
+  - [ ] Currency display per locale
+  - [ ] Language selector in header
+  - [ ] Product names: remain in English (inventory consistency)
+
+### Phase 5: Real-time & Communication
+- [ ] WebSocket connections for live updates
+- [ ] Customer support chat
+- [ ] SendGrid email integration
+- [ ] Twilio SMS notifications
+- [ ] Push notifications
+- [ ] Real-time inventory alerts
+
+### Phase 6: Mobile & Accessibility
+- [ ] QR code scanning
+- [ ] Camera integration for product reviews
+- [ ] Geolocation-based features
+- [ ] Touch gesture support
+- [ ] Enhanced accessibility (WCAG compliance)
+- [ ] Screen reader optimization
+- [ ] Keyboard navigation improvements
+
+### Phase 7: Advanced Testing Scenarios
+- [ ] Chaos engineering (configurable failure modes)
+- [ ] GraphQL API endpoint
+- [ ] Complex user journey flows
+- [ ] Multi-tab workflow testing
+- [ ] File upload capabilities
+- [ ] Infinite scroll/pagination
+- [ ] Autocomplete search
+- [ ] CAPTCHA handling
+- [ ] Browser storage testing (cookies, localStorage, IndexedDB)
+
+### Phase 8: Testing Showcase
+- [ ] Selenium test suites
+- [ ] Cypress E2E tests
+- [ ] Playwright test scenarios
+- [ ] API test collections (Postman/RestAssured)
+- [ ] Performance testing scenarios
+- [ ] Visual regression tests
+- [ ] Accessibility testing suites
+- [ ] Mobile responsive testing
+- [ ] Cross-browser compatibility tests
+- [ ] Load testing with concurrent users
+- [ ] Security testing demonstrations
+- [ ] Contract testing for microservices
+
+### Phase 9: Production Realism
+- [ ] Rate limiting and throttling
+- [ ] Database connection pooling
+- [ ] Cache strategies (Redis)
+- [ ] CDN integration
+- [ ] SSL/TLS configuration
+- [ ] Intentional performance bottlenecks (for testing)
+- [ ] Security vulnerability scenarios (test mode)
+- [ ] CORS and CSRF handling demonstrations
+- [ ] Retry logic and circuit breakers
+- [ ] Graceful degradation patterns
