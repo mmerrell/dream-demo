@@ -5,6 +5,7 @@ import TextField from '@mui/material/TextField';
 import Chip from '@mui/material/Chip';
 import { Elements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
+import axios from 'axios';
 import {
     register,
     login,
@@ -80,7 +81,18 @@ function App() {
             setEmail('');
             setPassword('');
         }
-        catch (error) { alert('Registration failed.'); }
+        catch (error: any) {
+            let errorMessage = 'Registration failed.';
+            if (axios.isAxiosError(error)) {
+                if (error.response?.data?.detail) {
+                    errorMessage = error.response.data.detail;
+                }
+            }
+            else if (error instanceof Error) {
+                errorMessage = error.message;
+            }
+            alert(errorMessage);
+        }
     };
 
     const handleLogin = async (e: FormEvent) => {
@@ -123,7 +135,19 @@ function App() {
             alert('Order placed successfully!');
             setCart(new Map());
             handleGetOrders();
-        } catch (error) { alert('Failed to place order.'); }
+        }
+        catch (error) {
+            let errorMessage = 'Could not place order. ';
+            if (axios.isAxiosError(error)) {
+                if (error.response?.data?.detail) {
+                    errorMessage += error.response.data.detail;
+                }
+            }
+            else if (error instanceof Error) {
+                errorMessage += error.message;
+            }
+            alert(errorMessage);
+        }
     };
 
     const handlePayNow = async (order: any) => {
