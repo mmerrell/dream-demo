@@ -10,6 +10,8 @@ from temporalio.client import Client
 from typing import Optional
 
 from fastapi.middleware.cors import CORSMiddleware
+from temporalio.exceptions import WorkflowAlreadyStartedError
+
 import crud, models, schemas, security, config
 import stripe
 
@@ -191,6 +193,29 @@ def read_root():
     """A welcome message for the API root."""
     return {"message": "Welcome to the Dream Demo Flower Shop API!"}
 
+async def start_payment_workflow(order_id: int) -> dict:
+    workflow_id = f"process-payment-{order_id}"
+
+    try:
+        handle = await temporal_client.start_workflow(
+            ProcessPaymentWorkflow.process_payment_workflow,
+            args=[order_id],
+            id=workflow_id,
+            task_queue="process-payment-tasks",
+        )
+        return {
+            "started": True,
+            "workflow_id": handle.id,
+            "message": "Payment processing started"
+        }
+
+    except WorkflowAlreadyStartedError:
+        return {
+            "started": False,
+            "workflow_id": workflow_id,
+            "message": "Payment already being processed"
+        }
+
 @app.post("/orders/{order_id}/process-payment", response_model=schemas.WorkflowStartResponse)
 async def process_order_payment(
         order_id: int,
@@ -205,18 +230,8 @@ async def process_order_payment(
     if not order or order.owner_id != current_user.id:
         raise HTTPException(status_code=404, detail="Order not found")
 
-    workflow_id = f"process-payment-{order_id}-{uuid.uuid4()}"
-    handle = await temporal_client.start_workflow(
-        ProcessPaymentWorkflow.process_payment_workflow,
-        args=[order_id],
-        id=workflow_id,
-        task_queue="process-payment-tasks",
-    )
-
-    return {
-        "message": "Payment processing started",
-        "workflow_id": handle.id
-    }
+    result = await start_payment_workflow(order_id)
+    return result
 
 @app.post("/webhook/stripe")
 async def stripe_webhook(request: Request, db: Session = Depends(get_db)):
@@ -242,8 +257,8 @@ async def stripe_webhook(request: Request, db: Session = Depends(get_db)):
 
             if order_id:
                 # Process the successful payment
-                result = process_payment(db, int(order_id))
-                return {"status": "success", "result": result}
+                result = await start_payment_workflow(order_id)
+                return result
 
         return {"status": "ignored"}
 

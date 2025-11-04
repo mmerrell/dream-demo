@@ -42,14 +42,12 @@ class InsufficientInventoryError(Exception):
         self.product_name = product_name
         self.available = available
         self.requested = requested
-        super().__init__(f"Not enough inventory for {product_name}")
+        super().__init__(f"Not enough inventory for {product_name}: need {requested}, have {available}")
 
 class InventoryAllocationFailedError(Exception):
-    def __init__(self, product_name: str, available: int, requested: int):
-        self.product_name = product_name
-        self.available = available
-        self.requested = requested
-        super().__init__(f"Inventory allocation failed for {product_name}")
+    def __init__(self, message: str):
+        self.message = message
+        super().__init__(message)
 
 class ProductNotFoundError(Exception):
     def __init__(self, product_id: int):

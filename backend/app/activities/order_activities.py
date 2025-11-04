@@ -35,19 +35,6 @@ async def create_order_activity(order_data: dict, user_id: int) -> dict:
             ],
         }
 
-    except crud.ProductNotFoundError as e:
-        return {
-            "error": "product_not_found",
-            "message": str(e),
-            "product_id": e.product_id
-        }
-
-    except crud.InsufficientInventoryError as e:
-        return {
-            "error": "insufficient_inventory",
-            "message": str(e),
-            "product": e.product_name
-        }
     finally:
         db.close()
 
@@ -97,22 +84,53 @@ async def check_inventory_activity(order_id: int) -> bool:
         db.close()
 
 @activity.defn
-async def allocate_inventory_activity(order_id: int) -> bool:
+async def allocate_inventory_activity(order_id: int) -> dict:
     """Activity: Allocate inventory for order"""
     activity.logger.info(f"Allocating inventory for order {order_id}")
     db = SessionLocal()
+    return_value: dict = {}
 
     try:
-        await asyncio.sleep(SLEEP_TIME)
-        return await asyncio.to_thread(crud.allocate_inventory, db, order_id)
+        await asyncio.sleep(1)
+        result = await asyncio.to_thread(crud.allocate_inventory, db, order_id)
+
+        # Return success with details
+        return_value = {
+            "success": True,
+            "order_id": order_id,
+            "allocated_items": result  # Assuming crud returns item details
+        }
+
+    except crud.InsufficientInventoryError as e:
+        # Return error dict with full details
+        return_value = {
+            "success": False,
+            "error": "insufficient_inventory",
+            "product_name": e.product_name,
+            "available": e.available,
+            "requested": e.requested,
+            "message": str(e)
+        }
+
+    except Exception as e:
+        # Generic error
+        return_value = {
+            "success": False,
+            "error": "allocation_failed",
+            "message": str(e)
+        }
+
     finally:
         db.close()
+
+    return return_value
 
 @activity.defn
 async def notify_fulfillment_activity(order_id: int) -> dict:
     """Activity: Notify fulfillment team"""
     activity.logger.info(f"Notifying fulfillment for order {order_id}")
-    return await asyncio.to_thread(crud.notify_fulfillment, order_id)
+    result = await asyncio.to_thread(crud.notify_fulfillment, order_id)
+    return {"status": "notified", "order_id": order_id, "result": result}
 
 @activity.defn
 async def send_confirmation_activity(order_id: int, customer_email: str) -> dict:

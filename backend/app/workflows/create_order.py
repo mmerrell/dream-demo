@@ -40,6 +40,7 @@ class OrderProcessingWorkflow:
                 start_to_close_timeout=timedelta(minutes=5),
                 retry_policy=DEFAULT_RETRY_POLICY
             )
+
             workflow.logger.info(f"\n{'=' * 50}")
             workflow.logger.info(f"Order {order_dict['id']} created")
             workflow.logger.info(f"{'=' * 50}\n")

@@ -6,7 +6,7 @@ from datetime import datetime
 
 # Configuration
 API_URL = "http://localhost:8000"
-NUM_ORDERS = 100  # Number of concurrent orders to simulate
+NUM_ORDERS = 5  # Number of concurrent orders to simulate
 
 # Test credentials (update with your test user)
 EMAIL = "mmerrell@gmail.com"

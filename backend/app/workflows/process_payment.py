@@ -75,15 +75,32 @@ class ProcessPaymentWorkflow:
             # 3. Allocate inventory
             self.current_step = "Allocating inventory"
             workflow.logger.info(f"Allocating inventory")
-            allocate_inventory_result = await workflow.execute_activity(
+            allocation_result = await workflow.execute_activity(
                 allocate_inventory_activity,
                 args=[order_id],
                 start_to_close_timeout=timedelta(minutes=5),
                 retry_policy=DEFAULT_RETRY_POLICY,
             )
-            if not allocate_inventory_result:
+
+            # Check if allocation failed
+            if not allocation_result.get("success"):
                 await self._update_status(order_id, "inventory_allocation_failed")
-                raise InventoryAllocationFailedError(f"Failed to allocate inventory for order {order_id}")
+
+                error_type = allocation_result.get("error")
+
+                if error_type == "insufficient_inventory":
+                    # Detailed error
+                    raise InsufficientInventoryError(
+                        product_name=allocation_result["product_name"],
+                        available=allocation_result["available"],
+                        requested=allocation_result["requested"]
+                    )
+                else:
+                    # Generic error
+                    raise InventoryAllocationFailedError(
+                        allocation_result.get("message", "Unknown allocation error")
+                    )
+            workflow.logger.info(f"Inventory allocated: {allocation_result['allocated_items']}")
 
             # 4. Notify fulfillment
             self.current_step = "Notify fulfillment"

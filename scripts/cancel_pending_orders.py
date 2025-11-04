@@ -6,7 +6,6 @@ API_URL = "http://localhost:8000"
 EMAIL = "mmerrell@gmail.com"
 PASSWORD = "a"
 
-
 async def login(session):
     """Login and get auth token"""
     login_data = aiohttp.FormData()
@@ -17,13 +16,11 @@ async def login(session):
         data = await resp.json()
         return data['access_token']
 
-
 async def get_orders(session, token):
     """Get all orders"""
     headers = {'Authorization': f'Bearer {token}'}
     async with session.get(f"{API_URL}/orders/", headers=headers) as resp:
         return await resp.json()
-
 
 async def cancel_order(session, token, order_id):
     """Cancel a single order"""
