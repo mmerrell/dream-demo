@@ -1,4 +1,4 @@
-import React, { useState, useEffect, FormEvent } from 'react';
+import React, { useState, useEffect, FormEvent, useCallback } from 'react';
 import { getProducts } from './services/productService';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
@@ -15,7 +15,6 @@ import {
     createPaymentIntent,
     User,
     OrderItemCreate,
-    updateOrderStatus,
     cancelOrder
 } from './services/apiService';
 import { Product } from './services/productService';
@@ -43,6 +42,24 @@ function App() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
 
+    const handleGetMe = useCallback(async () => {
+        if (!token) return;
+        try {
+            setCurrentUser(await getCurrentUser(token));
+        }
+        catch (error) {
+            alert('Session expired. Please log in again.');
+            setToken(null);
+            localStorage.removeItem('authToken');
+        }
+    }, [token]);
+
+    const handleGetOrders = useCallback(async () => {
+        if (!token) return;
+        try { setOrders(await getOrders(token)); }
+        catch (error) { console.error("Failed to fetch orders", error); }
+    }, [token]);
+
     useEffect(() => {
         fetchProducts();
     }, []);
@@ -52,7 +69,7 @@ function App() {
             handleGetMe();
             handleGetOrders();
         }
-    }, [token]);
+    }, [token, handleGetMe, handleGetOrders]);
 
     const fetchProducts = async () => setProducts(await getProducts());
 
@@ -107,24 +124,6 @@ function App() {
             alert('Login successful!');
         }
         catch (error) { alert('Login failed.'); }
-    };
-
-    const handleGetMe = async () => {
-        if (!token) return;
-        try {
-            setCurrentUser(await getCurrentUser(token));
-        }
-        catch (error) {
-            alert('Session expired. Please log in again.');
-            setToken(null);
-            localStorage.removeItem('authToken');
-        }
-    };
-
-    const handleGetOrders = async () => {
-        if (!token) return;
-        try { setOrders(await getOrders(token)); }
-        catch (error) { console.error("Failed to fetch orders", error); }
     };
 
     const handlePlaceOrder = async () => {
@@ -199,9 +198,6 @@ function App() {
             />
         );
     };
-
-    // Add this state
-    const [showCompleted, setShowCompleted] = useState(false);
 
     const [orderFilters, setOrderFilters] = useState({
         pending: true,
@@ -377,7 +373,7 @@ function App() {
                                         color="success"
                                         fullWidth
                                         sx={{ mt: 2 }}
-                                        aria-label={`Place order for ${cart.size} items totaling $${cartTotal.toFixed(2)}`}
+                                        aria-label={`Place order for ${cart.size} items totaling ${cartTotal.toFixed(2)}`}
                                     >
                                         Place Order
                                     </Button>
@@ -482,7 +478,7 @@ function App() {
                                                     color="success"
                                                     fullWidth
                                                     onClick={() => handlePayNow(order)}
-                                                    aria-label={`Pay now for order ${order.id} totaling $${order.items.reduce((sum: number, item: any) => 
+                                                    aria-label={`Pay now for order ${order.id} totaling ${order.items.reduce((sum: number, item: any) => 
                                                         sum + (Number(item.price_at_purchase) * item.quantity), 0
                                                     ).toFixed(2)}`}                                                >
                                                     Pay Now
@@ -573,7 +569,7 @@ function App() {
                                     variant="contained"
                                     color="primary"
                                     onClick={() => addToCart(product.id)}
-                                    aria-label={`Add ${product.name} to cart for $${Number(product.price).toFixed(2)}`}
+                                    aria-label={`Add ${product.name} to cart for ${Number(product.price).toFixed(2)}`}
                                 >
                                     Add to Cart
                                 </Button>
