@@ -11,6 +11,7 @@ services:
       - "5432:5432"
 
   backend:
+    platform: linux/amd64
     image: mmerrell/dream-demo-backend:sprint-1
     depends_on:
       - db
@@ -23,6 +24,7 @@ services:
       - "8000:8000"
 
   frontend:
+    platform: linux/amd64
     image: mmerrell/dream-demo-frontend:sprint-1
     depends_on:
       - backend
@@ -42,6 +44,7 @@ services:
       - temporal_postgres_data:/var/lib/postgresql/data
 
   temporal:
+    platform: linux/amd64
     image: temporalio/auto-setup:1.22.0
     depends_on:
       - temporal-postgres
@@ -55,6 +58,7 @@ services:
       - "7233:7233"
 
   temporal-ui:
+    platform: linux/amd64
     image: temporalio/ui:2.21.3
     depends_on:
       - temporal
