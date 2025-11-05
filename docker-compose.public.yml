@@ -14,11 +14,13 @@ services:
     image: mmerrell/dream-demo-backend:sprint-2
     depends_on:
       - db
+      - temporal
     environment:
       DATABASE_URL: postgresql://postgres:password@db:5432/dreamdemo
       SECRET_KEY: your-secret-key-here
       STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY}
       STRIPE_PUBLISHABLE_KEY: ${STRIPE_PUBLISHABLE_KEY}
+      TEMPORAL_HOST: temporal:7233
     ports:
       - "8000:8000"
 
@@ -32,6 +34,7 @@ services:
     ports:
       - "3000:3000"
 
+  # Temporal Services (NEW in Sprint-2)
   temporal-postgres:
     image: postgres:15
     environment:
@@ -63,6 +66,15 @@ services:
       - TEMPORAL_CORS_ORIGINS=http://localhost:3000
     ports:
       - "8080:8080"
+
+  temporal-admin-tools:
+    image: temporalio/admin-tools:1.22.0
+    depends_on:
+      - temporal
+    environment:
+      - TEMPORAL_ADDRESS=temporal:7233
+    stdin_open: true
+    tty: true
 
 volumes:
   postgres_data:
