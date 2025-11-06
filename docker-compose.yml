@@ -39,7 +39,7 @@ services:
     environment:
       - CHOKIDAR_USEPOLLING=true
       - REACT_APP_STRIPE_PUBLISHABLE_KEY=${STRIPE_PUBLISHABLE_KEY}
-      - REACT_APP_API_URL: http://18.219.227.13:8000
+      - REACT_APP_API_URL: http://3.148.146.205:8000
     env_file:
       - .env
 volumes:
