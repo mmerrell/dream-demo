@@ -23,6 +23,8 @@ services:
       TEMPORAL_HOST: temporal:7233
     ports:
       - "8000:8000"
+    working_dir: /app/app
+    command: uvicorn main:app --host 0.0.0.0 --port 8000
 
   frontend:
     image: mmerrell/dream-demo-frontend:sprint-2
@@ -45,6 +47,7 @@ services:
       - temporal_postgres_data:/var/lib/postgresql/data
 
   temporal:
+    platform: linux/amd64
     image: temporalio/auto-setup:1.22.0
     depends_on:
       - temporal-postgres
@@ -58,6 +61,7 @@ services:
       - "7233:7233"
 
   temporal-ui:
+    platform: linux/amd64
     image: temporalio/ui:2.21.3
     depends_on:
       - temporal
@@ -68,6 +72,7 @@ services:
       - "8080:8080"
 
   temporal-admin-tools:
+    platform: linux/amd64
     image: temporalio/admin-tools:1.22.0
     depends_on:
       - temporal
