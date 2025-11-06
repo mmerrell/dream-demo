@@ -1,7 +1,15 @@
 #!/bin/bash
 set -e
 
-# Get instance IP and clean it
+# Check for required environment variables
+if [ -z "$STRIPE_SECRET_KEY" ] || [ -z "$STRIPE_PUBLISHABLE_KEY" ]; then
+    echo "Error: Stripe keys not set!"
+    echo "Please set environment variables:"
+    echo "export STRIPE_SECRET_KEY='sk_test_...'"
+    echo "export STRIPE_PUBLISHABLE_KEY='pk_test_...'"
+    exit 1
+fi
+
 INSTANCE_IP=$(terraform -chdir=terraform output -raw instance_ip | tr -d '\n\r ')
 echo "Deploying to instance: $INSTANCE_IP"
 
@@ -10,25 +18,25 @@ INSTANCE_IP=$INSTANCE_IP envsubst < docker-compose.public.yml > docker-compose.g
 
 # Copy files to instance
 scp -i ~/.ssh/mmerrell-sauce.pem docker-compose.generated.yml ec2-user@$INSTANCE_IP:~/docker-compose.yml
-scp -i ~/.ssh/mmerrell-sauce.pem .env.template ec2-user@$INSTANCE_IP:~/
-scp -i ~/.ssh/mmerrell-sauce.pem scripts/seed_database.py ec2-user@$INSTANCE_IP:~/  # Add seed script
+scp -i ~/.ssh/mmerrell-sauce.pem scripts/seed_database.py ec2-user@$INSTANCE_IP:~/
 
 # Deploy and seed database
 ssh -i ~/.ssh/mmerrell-sauce.pem ec2-user@$INSTANCE_IP "
-    cp .env.template .env
-    echo 'STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}' >> .env
-    echo 'STRIPE_PUBLISHABLE_KEY=${STRIPE_PUBLISHABLE_KEY}' >> .env
+    # Create .env with actual values
+    cat > .env << EOF
+STRIPE_SECRET_KEY=$STRIPE_SECRET_KEY
+STRIPE_PUBLISHABLE_KEY=$STRIPE_PUBLISHABLE_KEY
+DATABASE_URL=postgresql://postgres:password@db:5432/dreamdemo
+SECRET_KEY=your-super-secret-jwt-key-here
+EOF
+    
     export INSTANCE_IP=$INSTANCE_IP
     
-    # Start containers
     docker-compose up -d
-    
-    # Wait for database to be ready
     sleep 10
     
-    # Seed the database
+    # Copy seed script and run
     docker cp ~/seed_database.py \$(docker-compose ps -q backend):/app/seed_database.py
-
     docker-compose exec -T backend python seed_database.py
 "
 
