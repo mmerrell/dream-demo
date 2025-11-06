@@ -11,6 +11,7 @@ services:
       - "5432:5432"
 
   backend:
+    platform: linux/amd64  # Add platform
     image: mmerrell/dream-demo-backend:sprint-2
     depends_on:
       - db
@@ -23,11 +24,12 @@ services:
       - "8000:8000"
 
   frontend:
+    platform: linux/amd64  # Add platform
     image: mmerrell/dream-demo-frontend:sprint-2
     depends_on:
       - backend
     environment:
-      REACT_APP_API_URL: http://localhost:8000
+      REACT_APP_API_URL: http://18.216.227.1:8000  # Fix to Elastic IP
       REACT_APP_STRIPE_PUBLISHABLE_KEY: ${STRIPE_PUBLISHABLE_KEY}
     ports:
       - "3000:3000"

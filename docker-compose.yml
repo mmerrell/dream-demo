@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   backend:
     build: ./backend
@@ -8,38 +6,36 @@ services:
     volumes:
       - ./backend/app:/app
     environment:
-      - DATABASE_URL=postgresql://user:password@db/mydatabase
-      - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}
-    env_file:
-      - .env
+      DATABASE_URL: postgresql://postgres:password@db:5432/dreamdemo  # Match public
+      SECRET_KEY: your-secret-key-here
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY}
+      STRIPE_PUBLISHABLE_KEY: ${STRIPE_PUBLISHABLE_KEY}
     depends_on:
       - db
     command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 
   db:
-    image: postgres:13-alpine
+    image: postgres:15  # Match public version
     volumes:
-      - postgres_data:/var/lib/postgresql/data/
+      - postgres_data:/var/lib/postgresql/data
     environment:
-      - POSTGRES_USER=user
-      - POSTGRES_PASSWORD=password
-      - POSTGRES_DB=mydatabase
+      POSTGRES_DB: dreamdemo  # Match public
+      POSTGRES_USER: postgres  # Match public
+      POSTGRES_PASSWORD: password
     ports:
       - "5432:5432"
 
   frontend:
-    build:
-      context: ./frontend-web
-      dockerfile: Dockerfile
+    build: ./frontend-web
     ports:
       - "3000:3000"
     volumes:
       - ./frontend-web:/app
       - /app/node_modules
     environment:
-      - CHOKIDAR_USEPOLLING=true
-      - REACT_APP_STRIPE_PUBLISHABLE_KEY=${STRIPE_PUBLISHABLE_KEY}
-    env_file:
-      - .env
+      CHOKIDAR_USEPOLLING: true
+      REACT_APP_API_URL: http://localhost:8000  # Local development
+      REACT_APP_STRIPE_PUBLISHABLE_KEY: ${STRIPE_PUBLISHABLE_KEY}
+
 volumes:
   postgres_data:

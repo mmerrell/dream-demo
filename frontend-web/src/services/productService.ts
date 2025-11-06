@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = 'http://localhost:8000'; // The backend URL
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
 
 // Define the Product type to match the backend schema
 export interface Product {
