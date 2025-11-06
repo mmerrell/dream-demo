@@ -11,10 +11,12 @@ services:
       - "5432:5432"
 
   backend:
-    platform: linux/amd64
-    image: mmerrell/dream-demo-backend:sprint-1
+    build: ./backend  # Build locally for your Mac
     depends_on:
       - db
+    volumes:
+      - ./backend/app:/app  # Live code mounting
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
     environment:
       DATABASE_URL: postgresql://postgres:password@db:5432/dreamdemo
       SECRET_KEY: your-secret-key-here
@@ -24,13 +26,16 @@ services:
       - "8000:8000"
 
   frontend:
-    platform: linux/amd64
-    image: mmerrell/dream-demo-frontend:sprint-1
+    build: ./frontend-web  # Build locally for your Mac
     depends_on:
       - backend
+    volumes:
+      - ./frontend-web:/app  # Live code mounting
+      - /app/node_modules
     environment:
-      REACT_APP_API_URL: http://3.148.146.205:8000
+      REACT_APP_API_URL: http://localhost:8000  # Local development
       REACT_APP_STRIPE_PUBLISHABLE_KEY: ${STRIPE_PUBLISHABLE_KEY}
+      CHOKIDAR_USEPOLLING: true  # For hot reload
     ports:
       - "3000:3000"
 
