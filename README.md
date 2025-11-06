@@ -1,117 +1,229 @@
 # Dream Demo - E-Commerce Flower Shop
 
-A full-stack e-commerce application designed to demonstrate comprehensive testing capabilities with Sauce Labs. This project intentionally includes both working features and documented bugs to showcase real-world testing scenarios.
+A full-stack e-commerce application designed to demonstrate comprehensive testing capabilities with Sauce Labs. This project features automated infrastructure deployment, multiple sprint versions, and intentionally includes both working features and documented bugs to showcase real-world testing scenarios.
 
 ## 🎯 Project Goals
 
 This application serves as the ultimate demo for Sauce Labs testing features, showcasing:
 
 - **Complex Web Application Testing**: Multi-page flows, authentication, payments
+- **Infrastructure as Code**: Automated AWS deployment with Terraform
+- **CI/CD Pipeline**: GitHub Actions with automated testing and deployment
 - **Third-Party Integrations**: Stripe payments, future support for Venmo, CashApp
 - **API Testing**: RESTful backend with FastAPI
 - **Database Operations**: PostgreSQL with inventory management
 - **Detailed Logging**: Comprehensive workflow tracking and monitoring
 - **Intentional Bugs**: Documented issues for testing and debugging demonstrations
 
-## 🏗️ Architecture
+## 🏗️ Infrastructure as Code
 
-**Current Stack:**
-- **Frontend**: React with TypeScript, Material-UI components
-- **Backend**: Python FastAPI with SQLAlchemy ORM
-- **Database**: PostgreSQL 13
-- **Payment Processing**: Stripe (test mode)
-- **Containerization**: Docker Compose
+This project uses Terraform for automated infrastructure provisioning and GitHub Actions for CI/CD deployment.
 
-**Tech Stack:**
-```
-Frontend (Port 3000)
-    ├── React 18
-    ├── TypeScript
-    ├── Material-UI (MUI)
-    ├── Axios
-    └── Stripe.js
+### Prerequisites for Infrastructure
 
-Backend (Port 8000)
-    ├── FastAPI
-    ├── SQLAlchemy
-    ├── Pydantic
-    ├── python-jose (JWT)
-    ├── passlib (bcrypt)
-    └── Stripe Python SDK
+- [Terraform](https://terraform.io/downloads.html) >= 1.5.0
+- AWS CLI configured with appropriate credentials
+- Docker with buildx support
+- AWS account with EC2/VPC permissions
 
-Database (Port 5432)
-    └── PostgreSQL 13
+### Infrastructure Setup
+
+1. **Configure AWS credentials:**
+```bash
+aws configure --profile terraform
+# Or export AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY
 ```
 
-## 🚀 Quick Start
+2. **Set required environment variables:**
+```bash
+export STRIPE_SECRET_KEY="sk_test_your_key"
+export STRIPE_PUBLISHABLE_KEY="pk_test_your_key"
+```
+
+3. **Initialize Terraform:**
+```bash
+cd terraform
+terraform init
+```
+
+4. **Deploy infrastructure:**
+```bash
+terraform plan
+terraform apply
+```
+
+This creates:
+- EC2 instance (t3.large) with Docker pre-installed
+- Elastic IP for consistent addressing  
+- Security groups (SSH, HTTP ports 3000/8000)
+- 30GB encrypted EBS storage
+
+### Manual Deployment
+
+For manual deployment to your infrastructure:
+```bash
+./scripts/deploy.sh
+```
+
+This script:
+- Gets the instance IP from Terraform
+- Configures application with dynamic IP addresses
+- Deploys containers with proper platform compatibility
+- Seeds the database with test data
+
+Your application will be accessible at:
+- **Frontend:** `http://ELASTIC_IP:3000`
+- **Backend API:** `http://ELASTIC_IP:8000`
+
+### Automated Deployment
+
+GitHub Actions automatically deploys on push to sprint branches:
+
+1. **Set GitHub Secrets:**
+   - `AWS_ACCESS_KEY_ID`
+   - `AWS_SECRET_ACCESS_KEY`
+   - `AWS_DEFAULT_REGION`
+   - `STRIPE_SECRET_KEY`
+   - `STRIPE_PUBLISHABLE_KEY`
+
+2. **Push to sprint branch:**
+```bash
+git push origin sprint-2
+```
+
+The pipeline automatically:
+- Provisions infrastructure with Terraform
+- Builds platform-specific Docker images (linux/amd64)
+- Deploys to EC2 with proper configuration
+- Runs database migrations and seeding
+
+## 🔧 Development vs Deployment
+
+### Local Development
+- **Repository:** Sprint branches (sprint-1, sprint-2, etc.)
+- **Command:** `docker-compose up`
+- **Features:** Hot reload, volume mounts, localhost URLs
+- **Database:** Local PostgreSQL container
+
+### Production Deployment  
+- **Infrastructure:** Terraform in main branch
+- **Application:** Configurable sprint version
+- **Command:** `./scripts/deploy.sh` or GitHub Actions
+- **Features:** Immutable images, dynamic IPs, production config
+- **Database:** Cloud PostgreSQL with persistent storage
+
+### Branch Strategy
+- **main:** Infrastructure code, deployment scripts, stable releases
+- **sprint-X:** Application features, development workflows  
+- **Deploy specific sprint:** `terraform apply -var="sprint=sprint-2"`
+
+## 💰 Cost Management
+
+**Tear down infrastructure when not in use:**
+```bash
+cd terraform
+terraform destroy
+```
+
+**Typical AWS costs:**
+- t3.large EC2: ~$0.08/hour ($60/month if running 24/7)
+- Elastic IP: Free when attached to running instance
+- EBS storage: ~$3/month for 30GB
+- Data transfer: Minimal for demo usage
+
+**Cost optimization:**
+- Destroy infrastructure after demos (`terraform destroy`)
+- Recreate in minutes when needed (`terraform apply`)
+- Use t3.medium for development (half the cost)
+
+## 🚀 Quick Start - Local Development
 
 ### Prerequisites
 
 - Docker Desktop installed and running
-- Stripe test account (free at [stripe.com](https://stripe.com))
 - Git
+- Stripe test account (free at [stripe.com](https://stripe.com))
 
-### Installation
+### Local Installation
 
-1. **Clone the repository:**
+1. **Clone and switch to a sprint branch:**
 ```bash
-   git clone <repository-url>
-   cd dream-demo
+git clone <repository-url>
+cd dream-demo
+git checkout sprint-2
 ```
 
 2. **Set up environment variables:**
-   
-   Create a `.env` file in the project root:
 ```bash
-   # .env
-   STRIPE_SECRET_KEY=sk_test_your_secret_key_here
-   STRIPE_PUBLISHABLE_KEY=pk_test_your_publishable_key_here
+# Create .env file
+cat > .env << EOF
+STRIPE_SECRET_KEY=sk_test_your_secret_key_here
+STRIPE_PUBLISHABLE_KEY=pk_test_your_publishable_key_here
+DATABASE_URL=postgresql://postgres:password@db:5432/dreamdemo
+SECRET_KEY=your-super-secret-jwt-key-here
+EOF
 ```
 
-   **Getting Stripe Keys:**
-   - Sign up at https://dashboard.stripe.com/register
-   - Navigate to https://dashboard.stripe.com/test/apikeys
-   - Copy both "Publishable key" (pk_test_...) and "Secret key" (sk_test_...)
-   - Paste into your `.env` file
-
-3. **Build and start all services:**
+3. **Start local development:**
 ```bash
-   docker-compose up --build
+docker-compose up --build
 ```
 
-   This will start:
-   - Frontend at http://localhost:3000
-   - Backend API at http://localhost:8000
-   - Backend API docs at http://localhost:8000/docs
-   - PostgreSQL database at localhost:5432
-
-4. **Seed the database with products:**
-   
-   In a new terminal:
+4. **Seed the database:**
 ```bash
-   docker-compose exec backend python seed_database.py
+docker-compose exec backend python seed_database.py
 ```
 
-5. **Access the application:**
-   
-   Open http://localhost:3000 in your browser
+5. **Access locally:**
+   - Frontend: http://localhost:3000
+   - Backend API: http://localhost:8000
+   - API docs: http://localhost:8000/docs
 
-### Test Credentials
+## 🌟 Sprint Versions
 
-**Stripe Test Cards:**
-- Success: `4242 4242 4242 4242`
-- Declined: `4000 0000 0000 0002`
-- Insufficient funds: `4000 0000 0000 9995`
-- Any future expiry date (e.g., 12/34)
-- Any 3-digit CVC (e.g., 123)
+### Sprint-1: Core E-Commerce
+- ✅ User authentication (JWT)
+- ✅ Product catalog (300+ flowers) 
+- ✅ Shopping cart
+- ✅ Stripe payment processing
+- ✅ Order management
 
-More test cards: https://stripe.com/docs/testing
+### Sprint-2: Enhanced Features  
+- ✅ Improved UI/UX
+- ✅ Bug fixes and optimizations
+- ✅ Enhanced payment flow
+- ✅ Better error handling
+
+### Sprint-3: Advanced Workflows (Planned)
+- 🚧 Temporal workflow integration
+- 🚧 Kafka event streaming
+- 🚧 Enhanced observability
+- 🚧 Additional payment methods
+
+## 🏗️ Architecture
+
+**Current Stack:**
+- **Frontend**: React with TypeScript, Material-UI
+- **Backend**: Python FastAPI with SQLAlchemy ORM
+- **Database**: PostgreSQL 15
+- **Payment**: Stripe (test mode)
+- **Infrastructure**: AWS EC2, Terraform
+- **CI/CD**: GitHub Actions
+- **Containerization**: Docker with multi-platform builds
+
+**Production Architecture:**
+```
+Internet → Elastic IP → EC2 Instance
+                       ├── Frontend Container (Port 3000)
+                       ├── Backend Container (Port 8000) 
+                       └── PostgreSQL Container (Port 5432)
+```
 
 ## 🐛 Known Bugs
 
 This application intentionally contains bugs for testing demonstrations. See [BUGS.md](./BUGS.md) for:
 - Documented issues and their severity
-- Reproduction steps
+- Reproduction steps  
 - Expected vs. actual behavior
 - Potential fixes (not implemented)
 
@@ -121,280 +233,176 @@ These bugs are valuable for:
 - Training on QA workflows
 - Proving ROI of testing tools
 
-## 📋 Features
-
-### Implemented
-- ✅ User registration and authentication (JWT)
-- ✅ Product catalog with 300+ flower products
-- ✅ Shopping cart management
-- ✅ Order placement and tracking
-- ✅ Stripe payment integration
-- ✅ Inventory management
-- ✅ Order fulfillment workflow
-- ✅ Email confirmation (mocked)
-- ✅ Session persistence
-
-### E-Commerce Workflow
-1. Browse products (anonymous or authenticated)
-2. Add items to cart
-3. Register/Login
-4. Place order (creates pending order)
-5. Pay with Stripe (triggers workflow)
-6. Inventory allocation
-7. Fulfillment notification
-8. Customer confirmation
-9. Order completion
-
 ## 🛠️ Development
 
 ### Project Structure
 ```
 dream-demo/
-├── frontend-web/          # React frontend
-│   ├── src/
-│   │   ├── App.tsx       # Main application
-│   │   ├── components/   # React components
-│   │   └── services/     # API service layer
-│   ├── public/           # Static assets
-│   └── Dockerfile
-├── backend/              # FastAPI backend
-│   └── app/
-│       ├── main.py       # API endpoints
-│       ├── models.py     # Database models
-│       ├── schemas.py    # Pydantic schemas
-│       ├── crud.py       # Database operations
-│       ├── security.py   # Auth & hashing
-│       └── config.py     # Configuration
-├── docker-compose.yml    # Container orchestration
-├── .env                  # Environment variables (not in git)
-├── BUGS.md              # Known issues documentation
-└── README.md            # This file
+├── terraform/               # Infrastructure as Code
+│   ├── main.tf             # Main Terraform configuration
+│   ├── variables.tf        # Input variables
+│   ├── outputs.tf          # Output values
+│   └── user_data.sh        # EC2 initialization script
+├── scripts/                # Deployment automation
+│   ├── deploy.sh           # Manual deployment script
+│   └── seed_database.py    # Database seeding
+├── .github/workflows/      # CI/CD pipelines
+│   └── deploy.yml         # GitHub Actions workflow
+├── frontend-web/           # React frontend (in sprint branches)
+├── backend/               # FastAPI backend (in sprint branches)
+├── docker-compose.yml     # Local development (in sprint branches)
+├── docker-compose.public.yml  # Production deployment template
+└── README.md             # This file
 ```
 
 ### Common Commands
 
-**Start services:**
+**Infrastructure management:**
 ```bash
-docker-compose up
+# Deploy infrastructure
+terraform apply
+
+# Get instance IP
+terraform output instance_ip  
+
+# Destroy infrastructure
+terraform destroy
 ```
 
-**Restart a service:**
+**Application deployment:**
+```bash  
+# Deploy to existing infrastructure
+./scripts/deploy.sh
+
+# Check deployment status
+ssh -i ~/.ssh/key.pem ec2-user@INSTANCE_IP "docker-compose ps"
+```
+
+**Local development:**
 ```bash
+# Start services
+docker-compose up
+
+# Restart a service
 docker-compose restart backend
-docker-compose restart frontend
-```
 
-**View logs:**
-```bash
+# View logs
 docker-compose logs -f backend
-docker-compose logs -f frontend
-```
 
-**Install frontend packages:**
-```bash
-docker-compose exec frontend npm install <package-name>
-```
-
-**Install backend packages:**
-```bash
-docker-compose exec backend pip install <package-name>
-```
-
-**Rebuild after dependency changes:**
-```bash
+# Rebuild after changes
 docker-compose build --no-cache
-docker-compose up
 ```
 
-**Stop all services:**
-```bash
-docker-compose down
-```
+## 📋 Testing with Sauce Labs
 
-**Clean up volumes (WARNING: deletes database):**
-```bash
-docker-compose down -v
-```
+### Test Scenarios Available
+
+**Cross-browser testing:**
+- Chrome, Firefox, Safari, Edge compatibility
+- JavaScript framework testing (React)
+- Payment flow testing (Stripe integration)
+
+**Mobile testing:**  
+- iOS and Android device testing
+- Responsive design validation
+- Touch interaction testing
+
+**API testing:**
+- RESTful endpoint validation
+- Authentication flows (JWT)
+- Payment processing workflows
+- Database operations
+
+**Performance testing:**
+- Page load times
+- API response times  
+- Database query performance
+- Concurrent user simulation
+
+**Visual testing:**
+- Screenshot comparison
+- Layout regression detection
+- Cross-browser visual consistency
+
+### Test Data
+
+**Stripe Test Cards:**
+- Success: `4242 4242 4242 4242`
+- Declined: `4000 0000 0000 0002`  
+- Insufficient funds: `4000 0000 0000 9995`
+- Any future expiry date and 3-digit CVC
+
+**User Accounts:**
+- Register new accounts via frontend
+- Test authentication flows
+- 300+ test products available
 
 ## 🗺️ Roadmap
 
-## 🗺️ Roadmap
-
-### Phase 1: Enhanced Infrastructure
-- [ ] AWS/GCP deployment configurations
+### Infrastructure & DevOps
+- [ ] Multi-environment support (dev/staging/prod)
+- [ ] Blue-green deployment strategy
 - [ ] Kubernetes orchestration
-- [ ] gRPC service communication
+- [ ] Auto-scaling configuration
+
+### Application Features  
+- [ ] Temporal workflow integration
 - [ ] Kafka event streaming
-- [ ] Configuration-driven architecture (YAML-based service orchestration)
-- [ ] Microservices split: auth, products, orders, payments, notifications, inventory services
+- [ ] OpenTelemetry observability
+- [ ] Additional payment methods (Venmo, CashApp)
+- [ ] Advanced inventory management
 
-### Phase 2: Observability & Analytics
-- [ ] OpenTelemetry integration
-- [ ] Grafana dashboards
-- [ ] ReportPortal.io test reporting
-- [ ] Google Analytics tracking
-- [ ] Mixpanel user analytics
-- [ ] Segment multi-destination analytics
-- [ ] Structured logging with ELK stack
-- [ ] Backtrace for production-level error monitoring
-
-### Phase 3: Payment & Inventory Expansion
-- [ ] Venmo integration
-- [ ] CashApp integration
-- [ ] PayPal integration
-- [ ] Open-source inventory management system
-- [ ] Multi-warehouse support
-- [ ] Real-time inventory updates via WebSocket
-- [ ] ShipStation/EasyPost shipping integration
-
-### Phase 4: Advanced Features
-- [ ] Feature flags (LaunchDarkly or custom)
-- [ ] A/B testing framework
-- [ ] Internationalization (i18n) - multi-language support
-- [ ] Currency conversion
-- [ ] Progressive Web App (PWA) features
-- [ ] Dark mode toggle
-- [ ] Product recommendations engine
-- [ ] Order tracking with shipping carriers
-- [ ] Customer reviews and ratings
-- [ ] Promotional codes and discounts
-- [ ] Admin dashboard
-- [ ] Social authentication (Google/Facebook OAuth)
-
-### Phase 5: Real-time & Communication
-- [ ] WebSocket connections for live updates
-- [ ] Customer support chat
-- [ ] SendGrid email integration
-- [ ] Twilio SMS notifications
-- [ ] Push notifications
-- [ ] Real-time inventory alerts
-
-### Phase 6: Mobile & Accessibility
-- [ ] QR code scanning
-- [ ] Camera integration for product reviews
-- [ ] Geolocation-based features
-- [ ] Touch gesture support
-- [ ] Enhanced accessibility (WCAG compliance)
-- [ ] Screen reader optimization
-- [ ] Keyboard navigation improvements
-
-### Phase 7: Advanced Testing Scenarios
-- [ ] Chaos engineering (configurable failure modes)
-- [ ] GraphQL API endpoint
-- [ ] Complex user journey flows
-- [ ] Multi-tab workflow testing
-- [ ] File upload capabilities
-- [ ] Infinite scroll/pagination
-- [ ] Autocomplete search
-- [ ] CAPTCHA handling
-- [ ] Browser storage testing (cookies, localStorage, IndexedDB)
-
-### Phase 8: Testing Showcase
-- [ ] Selenium test suites
-- [ ] Cypress E2E tests
-- [ ] Playwright test scenarios
-- [ ] API test collections (Postman/RestAssured)
-- [ ] Performance testing scenarios
-- [ ] Visual regression tests
-- [ ] Accessibility testing suites
-- [ ] Mobile responsive testing
-- [ ] Cross-browser compatibility tests
-- [ ] Load testing with concurrent users
-- [ ] Security testing demonstrations
-- [ ] Contract testing for microservices
-
-### Phase 9: Production Realism
-- [ ] Rate limiting and throttling
-- [ ] Database connection pooling
-- [ ] Cache strategies (Redis)
-- [ ] CDN integration
-- [ ] SSL/TLS configuration
-- [ ] Intentional performance bottlenecks (for testing)
-- [ ] Security vulnerability scenarios (test mode)
-- [ ] CORS and CSRF handling demonstrations
-- [ ] Retry logic and circuit breakers
-- [ ] Graceful degradation patterns
-
-## 🎯 Sauce Labs Integration
-
-This application is specifically designed to showcase:
-
-- **Cross-browser testing**: Test across Chrome, Firefox, Safari, Edge
-- **Mobile testing**: iOS and Android device testing
-- **Visual testing**: Screenshot comparison and visual regression
-- **API testing**: Backend endpoint validation
-- **Performance testing**: Load testing and bottleneck identification
-- **Test orchestration**: Parallel test execution
-- **CI/CD integration**: Automated testing pipelines
-- **Test analytics**: Comprehensive test reporting and insights
-
-## 🤝 Contributing
-
-This is an internal demo project. For questions or suggestions, contact the Sauce Labs demo team.
-
-## 📝 License
-
-Internal use only - Sauce Labs, Inc.
+### Testing & Quality
+- [ ] Automated test suites (Selenium, Cypress, Playwright)
+- [ ] Visual regression testing
+- [ ] Performance monitoring
+- [ ] Security testing scenarios
 
 ## 🆘 Troubleshooting
 
-**"Module not found" errors in frontend:**
+**Infrastructure issues:**
 ```bash
-docker-compose exec frontend npm install
-docker-compose restart frontend
+# Check Terraform state
+terraform show
+
+# Validate configuration  
+terraform validate
+
+# Refresh state
+terraform refresh
 ```
 
-**Database connection errors:**
+**Deployment issues:**
 ```bash
-docker-compose down -v
-docker-compose up
-# Then re-seed: docker-compose exec backend python seed_database.py
+# Check instance status
+aws ec2 describe-instances --instance-ids INSTANCE_ID
+
+# SSH to instance
+ssh -i ~/.ssh/key.pem ec2-user@INSTANCE_IP
+
+# Check container logs
+docker-compose logs
 ```
 
-**Stripe payment fails:**
-- Verify `.env` file has correct keys
-- Check keys start with `sk_test_` and `pk_test_`
-- Restart backend after adding keys
+**Common fixes:**
+- **Permission denied (publickey):** Check SSH key path and permissions
+- **Port already in use:** Verify security group rules in AWS
+- **Container won't start:** Check environment variables and image platform
+- **Database connection:** Ensure containers are on same network
 
-**Port already in use:**
-```bash
-# Find process using port 3000/8000/5432
-lsof -i :3000
-# Kill process or change port in docker-compose.yml
-```
-
-**Frontend shows blank page:**
-- Check browser console for errors
-- Verify backend is running: http://localhost:8000/docs
-- Check docker logs: `docker-compose logs frontend`
-
-## 📧 Support
+## 📝 Support
 
 For technical support or questions about this demo:
-- Internal Wiki: [link-to-wiki]
-- Slack: #demo-support
-- Email: demo-team@saucelabs.com
+- **Internal Slack:** #demo-support  
+- **Technical Issues:** Create GitHub issue
+- **Infrastructure Questions:** Contact DevOps team
 
-## Quick Start with Public Images
+## 📄 License
 
-1. **Download the compose file:**
-```bash
-   wget https://raw.githubusercontent.com/yourusername/dream-demo/main/docker-compose.public.yml
-   wget https://raw.githubusercontent.com/yourusername/dream-demo/main/.env.template
-```
+Internal use only - Sauce Labs, Inc.
 
-2. **Set up environment:**
-```bash
-   cp .env.template .env
-   # Edit .env with your Stripe keys
-```
+---
 
-3. **Start the application:**
-```bash
-   docker compose -f docker-compose.public.yml up
-```
-
-4. **Access the application:**
-   - Frontend: http://localhost:3000
-   - Backend API: http://localhost:8000
-   - Temporal UI: http://localhost:8080
+*This demo showcases modern DevOps practices with Infrastructure as Code, automated 
+deployment pipelines, and comprehensive testing capabilities for demonstrating Sauce 
+Labs platform features.*
