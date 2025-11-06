@@ -87,9 +87,13 @@ Database (Port 5432)
 
 4. **Seed the database with products:**
    
-   In a new terminal:
+   In a new terminal, from the project root directory:
 ```bash
-   docker-compose exec backend python seed_database.py
+   # Install requests library if not already installed
+   pip3 install --break-system-packages requests
+   
+   # Run the seed script
+   python3 scripts/seed_database.py
 ```
 
 5. **Access the application:**
