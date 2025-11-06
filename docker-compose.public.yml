@@ -29,45 +29,10 @@ services:
     depends_on:
       - backend
     environment:
-      REACT_APP_API_URL: http://localhost:8000
+      REACT_APP_API_URL: http://3.148.146.205:8000
       REACT_APP_STRIPE_PUBLISHABLE_KEY: ${STRIPE_PUBLISHABLE_KEY}
     ports:
       - "3000:3000"
 
-  temporal-postgres:
-    image: postgres:15
-    environment:
-      POSTGRES_DB: temporal
-      POSTGRES_USER: temporal
-      POSTGRES_PASSWORD: temporal
-    volumes:
-      - temporal_postgres_data:/var/lib/postgresql/data
-
-  temporal:
-    platform: linux/amd64
-    image: temporalio/auto-setup:1.22.0
-    depends_on:
-      - temporal-postgres
-    environment:
-      - DB=postgresql
-      - DB_PORT=5432
-      - POSTGRES_USER=temporal
-      - POSTGRES_PWD=temporal
-      - POSTGRES_SEEDS=temporal-postgres
-    ports:
-      - "7233:7233"
-
-  temporal-ui:
-    platform: linux/amd64
-    image: temporalio/ui:2.21.3
-    depends_on:
-      - temporal
-    environment:
-      - TEMPORAL_ADDRESS=temporal:7233
-      - TEMPORAL_CORS_ORIGINS=http://localhost:3000
-    ports:
-      - "8080:8080"
-
 volumes:
   postgres_data:
-  temporal_postgres_data:
