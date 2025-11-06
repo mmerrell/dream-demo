@@ -8,4 +8,5 @@ python-jose[cryptography]
 python-multipart
 strawberry-graphql[fastapi]
 stripe
+requests
 email-validator

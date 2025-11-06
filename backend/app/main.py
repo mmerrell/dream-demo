@@ -19,15 +19,31 @@ app = FastAPI(
     version="0.1.0"
 )
 
-# --- CORS Middleware ---
-origins = [
-    "http://localhost:3000",
-    "http://18.216.227.1:3000",
-]
+import os
+import requests
+
+def get_instance_ip():
+    try:
+        response = requests.get('http://169.254.169.254/latest/meta-data/public-ipv4', timeout=2)
+        return response.text
+    except:
+        return None
+
+def get_allowed_origins():
+    origins = ["http://localhost:3000"]
+
+    instance_ip = get_instance_ip()
+    if instance_ip:
+        origins.append(f"http://{instance_ip}:3000")
+
+    if os.getenv('FRONTEND_URL'):
+        origins.append(os.getenv('FRONTEND_URL'))
+
+    return origins
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=get_allowed_origins(),
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
