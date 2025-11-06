@@ -11,6 +11,7 @@ services:
       - "5432:5432"
 
   backend:
+    platform: linux/amd64
     image: mmerrell/dream-demo-backend:sprint-1
     depends_on:
       - db
@@ -23,6 +24,7 @@ services:
       - "8000:8000"
 
   frontend:
+    platform: linux/amd64
     image: mmerrell/dream-demo-frontend:sprint-1
     depends_on:
       - backend
