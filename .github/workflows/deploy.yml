@@ -1,0 +1,74 @@
+# .github/workflows/deploy.yml
+name: Deploy Dream Demo
+
+on:
+  push:
+    branches: [sprint-1, sprint-2, sprint-3]
+  workflow_dispatch:
+    inputs:
+      sprint:
+        description: 'Sprint to deploy'
+        required: true
+        default: 'sprint-2'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Extract sprint name
+      id: sprint
+      run: echo "sprint=${GITHUB_REF#refs/heads/}" >> $GITHUB_OUTPUT
+    
+    - name: Build and push images
+      run: |
+        docker buildx build --platform linux/amd64 -t ${{ secrets.DOCKER_REGISTRY }}/dream-demo-backend:${{ steps.sprint.outputs.sprint }} ./backend --push
+        docker buildx build --platform linux/amd64 -t ${{ secrets.DOCKER_REGISTRY }}/dream-demo-frontend:${{ steps.sprint.outputs.sprint }} ./frontend-web --push
+    
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v2
+      
+    - name: Terraform Init
+      run: terraform init
+      working-directory: terraform
+      
+    - name: Terraform Plan
+      run: terraform plan -var="sprint=${{ steps.sprint.outputs.sprint }}"
+      working-directory: terraform
+      
+    - name: Terraform Apply
+      run: terraform apply -auto-approve -var="sprint=${{ steps.sprint.outputs.sprint }}"
+      working-directory: terraform
+      
+    - name: Get instance IP
+      id: ip
+      run: |
+        IP=$(terraform output -raw instance_ip)
+        echo "ip=$IP" >> $GITHUB_OUTPUT
+      working-directory: terraform
+      
+    - name: Wait for instance
+      run: sleep 60
+      
+    - name: Deploy application
+      run: |
+        # Update docker-compose with correct IP
+        sed -i "s/ELASTIC_IP_PLACEHOLDER/${{ steps.ip.outputs.ip }}/g" docker-compose.public.yml
+        
+        # Copy files and deploy
+        scp -o StrictHostKeyChecking=no -i ~/.ssh/deploy_key docker-compose.public.yml ec2-user@${{ steps.ip.outputs.ip }}:~/docker-compose.yml
+        scp -o StrictHostKeyChecking=no -i ~/.ssh/deploy_key .env.template ec2-user@${{ steps.ip.outputs.ip }}:~/
+        
+        ssh -o StrictHostKeyChecking=no -i ~/.ssh/deploy_key ec2-user@${{ steps.ip.outputs.ip }} '
+          cp .env.template .env
+          echo "STRIPE_SECRET_KEY=${{ secrets.STRIPE_SECRET_KEY }}" >> .env
+          echo "STRIPE_PUBLISHABLE_KEY=${{ secrets.STRIPE_PUBLISHABLE_KEY }}" >> .env
+          docker-compose up -d
+        '
