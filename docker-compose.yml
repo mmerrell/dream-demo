@@ -1,6 +1,6 @@
 services:
   db:
-    image: postgres:15
+    image: postgres:13
     environment:
       POSTGRES_DB: dreamdemo
       POSTGRES_USER: postgres
