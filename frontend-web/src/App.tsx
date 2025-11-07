@@ -25,6 +25,55 @@ import './App.css';
 // Add this RIGHT AFTER your imports, BEFORE the App component
 const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY!);
 
+const SprintBadge = () => {
+  const sprintVersion = process.env.REACT_APP_SPRINT_VERSION || 'dev';
+
+  const sprintConfig = {
+    'sprint-1': { emoji: '🌹', name: 'Sprint-1', color: '#e74c3c' },
+    'sprint-2': { emoji: '🌸', name: 'Sprint-2', color: '#ff6b9d' },
+    'sprint-3': { emoji: '🌻', name: 'Sprint-3', color: '#f39c12' },
+    'sprint-4': { emoji: '🌺', name: 'Sprint-4', color: '#e91e63' },
+    'sprint-5': { emoji: '🌷', name: 'Sprint-5', color: '#9b59b6' },
+    'sprint-6': { emoji: '🌼', name: 'Sprint-6', color: '#f1c40f' },
+    'sprint-7': { emoji: '🌿', name: 'Sprint-7', color: '#27ae60' },
+    'sprint-8': { emoji: '🌾', name: 'Sprint-8', color: '#d4af37' },
+    'sprint-9': { emoji: '🏵️', name: 'Sprint-9', color: '#fd79a8' },
+    'sprint-10': { emoji: '🌰', name: 'Sprint-10', color: '#8b4513' },
+    'dev': { emoji: '🛠️', name: 'Dev', color: '#34495e' }
+  };
+
+  const config = sprintConfig[sprintVersion as keyof typeof sprintConfig] || sprintConfig['dev'];
+
+  return (
+    <div style={{
+      position: 'fixed',
+      bottom: '15px',
+      right: '15px',
+      backgroundColor: config.color,
+      color: 'white',
+      padding: '8px 12px',
+      borderRadius: '20px',
+      fontSize: '12px',
+      fontWeight: 'bold',
+      zIndex: 1000,
+      boxShadow: '0 3px 10px rgba(0,0,0,0.2)',
+      display: 'flex',
+      alignItems: 'center',
+      gap: '5px',
+      cursor: 'pointer',
+      transition: 'transform 0.2s ease',
+      userSelect: 'none'
+    }}
+    onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
+    onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1.0)'}
+    title={`Currently viewing ${config.name}`}
+    >
+      <span style={{ fontSize: '14px' }}>{config.emoji}</span>
+      <span>{config.name}</span>
+    </div>
+  );
+};
+
 function App() {
     // App State
     const [products, setProducts] = useState<Product[]>([]);
@@ -226,6 +275,7 @@ function App() {
 
     return (
         <div className="App">
+            <SprintBadge />
             <header className="App-header">
                 <div className="header-left">
                     <img src="/logo.png" alt="Flower Shop Logo" className="logo" />
