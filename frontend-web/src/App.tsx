@@ -21,6 +21,63 @@ import { Product } from './services/productService';
 import PaymentForm from './components/PaymentForm';
 import './App.css';
 
+const SprintBadge = () => {
+  const sprintVersion = process.env.REACT_APP_SPRINT_VERSION || 'dev';
+
+  const sprintConfig: Record<string, { emoji: string; name: string; color: string }> = {
+    'sprint-1': { emoji: '🌹', name: 'sprint-1', color: '#e74c3c' },
+    'sprint-2': { emoji: '🌸', name: 'sprint-2', color: '#ff6b9d' },
+    'sprint-3': { emoji: '🌻', name: 'sprint-3', color: '#f39c12' },
+    'sprint-4': { emoji: '🌺', name: 'sprint-4', color: '#e91e63' },
+    'sprint-5': { emoji: '🌷', name: 'sprint-5', color: '#9b59b6' },
+    'sprint-6': { emoji: '🌼', name: 'sprint-6', color: '#f1c40f' },
+    'sprint-7': { emoji: '🌿', name: 'sprint-7', color: '#27ae60' },
+    'sprint-8': { emoji: '🌾', name: 'sprint-8', color: '#d4af37' },
+    'sprint-9': { emoji: '🏵️', name: 'sprint-9', color: '#fd79a8' },
+    'sprint-10': { emoji: '🌰', name: 'Sprint-10', color: '#8b4513' },
+    'dev': { emoji: '🛠️', name: 'dev', color: '#34495e' }
+  };
+
+  const config = sprintConfig[sprintVersion as keyof typeof sprintConfig] || sprintConfig['dev'];
+
+  const githubBranch = sprintVersion === 'dev' ? 'main' : sprintVersion;
+  const githubUrl = `https://github.com/mmerrell/dream-demo/tree/${githubBranch}`;
+
+  return (
+    <a
+      href={githubUrl}
+      target="_blank"
+      rel="noopener noreferrer"
+      style={{
+        position: 'fixed',
+        bottom: '15px',
+        right: '15px',
+        backgroundColor: config.color,
+        color: 'white',
+        padding: '8px 12px',
+        borderRadius: '20px',
+        fontSize: '12px',
+        fontWeight: 'bold',
+        zIndex: 1000,
+        boxShadow: '0 3px 10px rgba(0,0,0,0.2)',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '5px',
+        cursor: 'pointer',
+        transition: 'transform 0.2s ease',
+        userSelect: 'none',
+        textDecoration: 'none'
+      }}
+      onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
+      onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1.0)'}
+      title={`View ${config.name} branch on GitHub`}
+    >
+      <span style={{ fontSize: '14px' }}>{config.emoji}</span>
+      <span>{config.name}</span>
+    </a>
+  );
+};
+
 // Add this RIGHT AFTER your imports, BEFORE the App component
 const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY!);
 
@@ -222,6 +279,7 @@ function App() {
 
     return (
         <div className="App">
+            <SprintBadge />
             <header className="App-header">
                 <div className="header-left">
                     <img src="/logo.png" alt="Flower Shop Logo" className="logo" />
