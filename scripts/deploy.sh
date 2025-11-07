@@ -1,6 +1,8 @@
 #!/bin/bash
 set -e
 
+SPRINT_VERSION=$(git branch --show-current)
+
 # Check for required environment variables
 if [ -z "$STRIPE_SECRET_KEY" ] || [ -z "$STRIPE_PUBLISHABLE_KEY" ]; then
     echo "Error: Stripe keys not set!"
@@ -27,7 +29,7 @@ ssh -i ~/.ssh/mmerrell-sauce.pem ec2-user@$INSTANCE_IP "
 STRIPE_SECRET_KEY=$STRIPE_SECRET_KEY
 STRIPE_PUBLISHABLE_KEY=$STRIPE_PUBLISHABLE_KEY
 DATABASE_URL=postgresql://postgres:password@db:5432/dreamdemo
-SECRET_KEY=your-super-secret-jwt-key-here
+REACT_APP_SPRINT_VERSION: ${SPRINT_VERSION}
 EOF
     
     export INSTANCE_IP=$INSTANCE_IP
