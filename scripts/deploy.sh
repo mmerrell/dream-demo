@@ -29,11 +29,11 @@ ssh -i ~/.ssh/mmerrell-sauce.pem ec2-user@$INSTANCE_IP "
 STRIPE_SECRET_KEY=$STRIPE_SECRET_KEY
 STRIPE_PUBLISHABLE_KEY=$STRIPE_PUBLISHABLE_KEY
 DATABASE_URL=postgresql://postgres:password@db:5432/dreamdemo
-REACT_APP_SPRINT_VERSION: ${SPRINT_VERSION}
 EOF
     
     export INSTANCE_IP=$INSTANCE_IP
-    
+    export REACT_APP_SPRINT_VERSION=$SPRINT_VERSION  # Add this line!
+
     docker-compose up -d
     sleep 10
     

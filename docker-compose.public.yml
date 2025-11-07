@@ -25,14 +25,13 @@ services:
 
   frontend:
     platform: linux/amd64
-    image: mmerrell/dream-demo-frontend:sprint-2
-    depends_on:
-      - backend
+    image: mmerrell/dream-demo-frontend:${SPRINT_VERSION}
+    ports:
+      - "3000:3000"
     environment:
       REACT_APP_API_URL: http://${INSTANCE_IP}:8000
       REACT_APP_STRIPE_PUBLISHABLE_KEY: ${STRIPE_PUBLISHABLE_KEY}
-    ports:
-      - "3000:3000"
+      REACT_APP_SPRINT_VERSION: ${SPRINT_VERSION}  # Add this line if missing!
 
 volumes:
   postgres_data:
