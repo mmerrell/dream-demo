@@ -22,8 +22,49 @@ import { Product } from './services/productService';
 import PaymentForm from './components/PaymentForm';
 import './App.css';
 
+const getSprintStyling = (sprintVersion: string) => {
+  const sprintConfig = {
+    'sprint-1': {
+      adjective: 'Dreadful',
+      style: {
+        fontFamily: 'Comic Sans MS, cursive',
+        color: '#ff0066',                   // Bright pink
+        textShadow: '2px 2px 4px #000'
+      }
+    },
+    'sprint-2': {
+      adjective: 'Clunky',
+      style: {
+        fontFamily: 'Arial Black, sans-serif',
+        color: '#ff8c00',                   // Bright orange
+        letterSpacing: '2px'
+      }
+    },
+    'sprint-3': {
+      adjective: 'Tolerable',
+      style: {
+        fontFamily: 'Georgia, serif',
+        color: '#e0e0e0',                   // Light gray
+        fontWeight: 'normal'
+      }
+    },
+    'sprint-4': {
+      adjective: 'Decent',
+      style: {
+        fontFamily: 'Helvetica, Arial, sans-serif',
+        color: '#ffffff',                   // Clean white
+        fontWeight: '600'
+      }
+    }
+    // Future sprints can get progressively more elegant
+  };
+  return sprintConfig[sprintVersion as keyof typeof sprintConfig] || sprintConfig['sprint-1'];
+};
+
+const sprintVersion = process.env.REACT_APP_SPRINT_VERSION || 'dev';
+const { adjective, style } = getSprintStyling(sprintVersion);
+
 const SprintBadge = () => {
-  const sprintVersion = process.env.REACT_APP_SPRINT_VERSION || 'dev';
 
   const sprintConfig: Record<string, { emoji: string; name: string; color: string }> = {
     'sprint-1': { emoji: '🌹', name: 'sprint-1', color: '#e74c3c' },
@@ -79,7 +120,6 @@ const SprintBadge = () => {
   );
 };
 
-// Add this RIGHT AFTER your imports, BEFORE the App component
 const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY!);
 
 function App() {
@@ -287,7 +327,7 @@ function App() {
             <header className="App-header">
                 <div className="header-left">
                     <img src="/logo.png" alt="Flower Shop Logo" className="logo" />
-                    <h1>Flower Shop</h1>
+                    <h1 style={style}>{adjective} Flower Shop</h1>
                 </div>
                 {token && (
                     <Button

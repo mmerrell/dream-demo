@@ -45,7 +45,7 @@ services:
     environment:
       - CHOKIDAR_USEPOLLING=true
       - REACT_APP_STRIPE_PUBLISHABLE_KEY=${STRIPE_PUBLISHABLE_KEY}
-      - REACT_APP_SPRINT_VERSION=sprint-3
+      - REACT_APP_SPRINT_VERSION=sprint-4
     env_file:
       - .env
 

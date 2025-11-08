@@ -24,7 +24,7 @@ class OrderProcessingWorkflow:
     @workflow.run
     async def create_order_workflow(self, order_data: dict, user_id: int) -> dict:
         workflow.logger.info(f"\n{'=' * 50}")
-        workflow.logger.info(f"Creating order for user: {user_id}, {len(order_data['items'])} items")
+        workflow.logger.info(f"Creating order record for user: {user_id}, {len(order_data['items'])} items")
         workflow.logger.info(f"{'=' * 50}\n")
 
         try:
