@@ -57,18 +57,18 @@ This roadmap outlines the planned development across multiple sprints, showcasin
 **Goal:** Polish user experience and add order management
 
 ### Planned Features
-- [ ] Replace alert() with MUI Snackbar/Toast notifications
-- [ ] Improved session expiration handling
+- ✅ Replace alert() with MUI Snackbar/Toast notifications
+- ✅ Improved session expiration handling
   - Detect 401 responses
   - Clear auth state and redirect to login
   - Preserve cart contents
-- [ ] Better error messages on duplicate email registration
+- ✅ Better error messages on duplicate email registration
 - ✅ Order filtering
 - [ ] Order search
-- [ ] Order status updates (real-time or polling)
+- ✅ Order status updates (real-time or polling)
 
 ### Bug Fixes
-- [ ] Fix: Intrusive alert() dialogs
+- ✅ Fix: Intrusive alert() dialogs
 
 ### Testing Focus
 - End-to-end payment flows
@@ -160,6 +160,7 @@ mailpit:
 
 ### Other Planned Features
 - [ ] Webhook signature verification (re-enable Stripe signature check)
+- [ ] Flower arrangement image thumbnails
 - [ ] Idempotent workflow IDs (prevent duplicate processing)
 - [ ] Workflow status polling endpoint
 - [ ] Frontend workflow status display
