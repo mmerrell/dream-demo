@@ -5,6 +5,7 @@ import App from './App';
 import reportWebVitals from './reportWebVitals';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements } from '@stripe/react-stripe-js';
+import { SnackbarProvider } from './contexts/SnackbarContext';
 
 // Replace with your actual Stripe publishable key (ideally from an env variable)
 const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY!);
@@ -14,9 +15,11 @@ const root = ReactDOM.createRoot(
 );
 root.render(
   <React.StrictMode>
-    <Elements stripe={stripePromise}>
-      <App />
-    </Elements>
+    <SnackbarProvider>
+      <Elements stripe={stripePromise}>
+        <App />
+      </Elements>
+    </SnackbarProvider>
   </React.StrictMode>
 );
 

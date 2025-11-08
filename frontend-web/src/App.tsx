@@ -5,6 +5,7 @@ import TextField from '@mui/material/TextField';
 import Chip from '@mui/material/Chip';
 import { Elements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
+import { useSnackbar } from './contexts/SnackbarContext';
 import axios from 'axios';
 import {
     register,
@@ -91,6 +92,9 @@ function App() {
     const [selectedOrder, setSelectedOrder] = useState<any | null>(null);
     const [clientSecret, setClientSecret] = useState<string | null>(null);
 
+    // Snackbar Notifications
+    const { showSnackbar } = useSnackbar();
+
     // Auth State
     const [token, setToken] = useState<string | null>(
         localStorage.getItem('authToken')  // <-- Updated this line
@@ -105,11 +109,11 @@ function App() {
             setCurrentUser(await getCurrentUser(token));
         }
         catch (error) {
-            alert('Session expired. Please log in again.');
+            showSnackbar('Session expired. Please log in again.', 'error');
             setToken(null);
             localStorage.removeItem('authToken');
         }
-    }, [token]);
+    }, [token, showSnackbar]);
 
     const handleGetOrders = useCallback(async () => {
         if (!token) return;
@@ -151,7 +155,7 @@ function App() {
         e.preventDefault();
         try {
             await register({ email, password });
-            alert('Success! Please log in.');
+            showSnackbar('Success! Please log in.', 'success');
             setEmail('');
             setPassword('');
         }
@@ -165,7 +169,7 @@ function App() {
             else if (error instanceof Error) {
                 errorMessage = error.message;
             }
-            alert(errorMessage);
+            showSnackbar(errorMessage, 'error');
         }
     };
 
@@ -178,9 +182,9 @@ function App() {
             const res = await login(formData);
             setToken(res.access_token);
             localStorage.setItem('authToken', res.access_token);
-            alert('Login successful!');
+            showSnackbar('Login successful!', 'success');
         }
-        catch (error) { alert('Login failed.'); }
+        catch (error) { showSnackbar('Login failed.', 'error'); }
     };
 
     const handlePlaceOrder = async () => {
@@ -188,7 +192,7 @@ function App() {
         const orderItems: OrderItemCreate[] = Array.from(cart.entries()).map(([pid, q]) => ({ product_id: pid, quantity: q }));
         try {
             await createOrder({ items: orderItems }, token);
-            alert('Order placed successfully!');
+            showSnackbar('Order placed successfully!', 'success');
             setCart(new Map());
             handleGetOrders();
         }
@@ -202,7 +206,7 @@ function App() {
             else if (error instanceof Error) {
                 errorMessage += error.message;
             }
-            alert(errorMessage);
+            showSnackbar(errorMessage, 'error');
         }
     };
 
@@ -212,7 +216,7 @@ function App() {
             const res = await createPaymentIntent(order.id, token);
             setClientSecret(res.client_secret);
             setSelectedOrder(order);
-        } catch (error) { alert('Failed to initiate payment.'); }
+        } catch (error) { showSnackbar('Failed to initiate payment.', 'error'); }
     };
 
     const handleCancelOrder = async (orderId: number) => {
@@ -221,10 +225,10 @@ function App() {
 
         try {
             await cancelOrder(orderId, token);
-            alert('Order cancelled successfully');
+            showSnackbar('Order cancelled successfully', 'success');
             handleGetOrders();
         } catch (error) {
-            alert('Failed to cancel order');
+            showSnackbar('Failed to cancel order', 'error');
         }
     };
 
@@ -585,7 +589,7 @@ function App() {
                                 <PaymentForm
                                     clientSecret={clientSecret}
                                     onSuccess={() => {
-                                        alert('Payment successful!');
+                                        showSnackbar('Payment successful!', 'success');
                                         fetch(`http://localhost:8000/orders/${selectedOrder.id}/process-payment`, {
                                             method: 'POST',
                                             headers: {

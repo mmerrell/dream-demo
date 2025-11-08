@@ -4,8 +4,38 @@ This document tracks known bugs in the Dream Demo Flower Shop application. These
 
 ## Bug List
 
+## New in sprint-3
+
+### Frontend Crash on Invalid Email Validation Error
+- **Status**: 🔴 Unfixed (Intentional for Demo)
+- **Severity**: High
+- **Component**: Frontend - Error Handling
+- **Description**: The application crashes when the backend returns detailed validation error objects for invalid email formats. The frontend attempts to render a complex validation object directly as a React child, causing a fatal render error. The error exposes the internal structure of Pydantic validation errors (`type`, `loc`, `msg`, `input`, `ctx` keys) to the frontend, which cannot properly handle or display this structured data.
+- **Location**: `frontend-web/src/App.tsx` - Error handling in `handleRegister()` function and potentially other form submission handlers
+- **Reproduction Steps**:
+  1. Navigate to the registration form
+  2. Enter an invalid email address (e.g., "a@a")
+  3. Fill in other required fields
+  4. Click "Register"
+  5. Observe React error: "Objects are not valid as a React child (found: object with keys {type, loc, msg, input, ctx})"
+  6. Application UI becomes unresponsive until page refresh
+- **Expected Behavior**: Should display a user-friendly error message like "Please enter a valid email address" using the Snackbar notification system
+- **Current Behavior**: Frontend crashes with React rendering error, requiring page refresh to restore functionality
+- **Root Cause**: Backend validation errors are being passed directly to the frontend display logic without proper error message extraction
+- **Security Impact**: Low - validation is working correctly on backend, this is purely a frontend display issue
+- **Affected Actions**:
+  - User registration with invalid email formats
+  - Potentially other form validations that return detailed error objects
+- **Potential Fixes**: 
+  - Extract error message string from validation error object before displaying
+  - Implement proper error boundary to catch rendering errors
+  - Add error message mapping for common validation failures
+  - Use `error.response.data.detail || error.response.data.message || 'Registration failed'` pattern
+  - Add client-side email validation to prevent invalid submissions
+---
+
 ### Intrusive Alert Dialogs for User Actions
-- **Status**: 🔴 Unfixed
+- **Status**: ✅ Fixed
 - **Severity**: Medium
 - **Component**: Frontend - User Experience
 - **Description**: The application uses native browser `alert()` dialogs for user feedback (order placement, payment success, login success, registration failures, etc.). These are intrusive, block all interaction, and provide poor UX. They're modal, unstyled, and inconsistent with the modern Material-UI design system used elsewhere in the app.
