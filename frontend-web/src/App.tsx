@@ -20,11 +20,42 @@ import { Product } from './services/productService';
 import PaymentForm from './components/PaymentForm';
 import './App.css';
 
-// Add this RIGHT AFTER your imports, BEFORE the App component
+const getSprintStyling = (sprintVersion: string) => {
+  const sprintConfig = {
+    'sprint-1': {
+      adjective: 'Dreadful',
+      style: {
+        fontFamily: 'Comic Sans MS, cursive',
+        color: '#ff0066',
+        textShadow: '2px 2px 4px #000'
+      }
+    },
+    'sprint-2': {
+      adjective: 'Clunky',
+      style: {
+        fontFamily: 'Arial Black, sans-serif',
+        color: '#ff8c00',
+        letterSpacing: '2px'
+      }
+    },
+    'sprint-3': {
+      adjective: 'Tolerable',
+      style: {
+        fontFamily: 'Georgia, serif',
+        color: '#e0e0e0',
+        fontWeight: 'normal'
+      }
+    }
+  };
+  return sprintConfig[sprintVersion as keyof typeof sprintConfig] || sprintConfig['sprint-1'];
+};
+
+const sprintVersion = process.env.REACT_APP_SPRINT_VERSION || 'sprint-1';
+const { adjective, style } = getSprintStyling(sprintVersion);
+
 const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY!);
 
 const SprintBadge = () => {
-  const sprintVersion = process.env.REACT_APP_SPRINT_VERSION || 'dev';
 
   const sprintConfig = {
     'sprint-1': { emoji: '🌹', name: 'sprint-1', color: '#e74c3c' },
@@ -220,10 +251,11 @@ function App() {
 
     return (
         <div className="App">
+            <SprintBadge />
             <header className="App-header">
                 <div className="header-left">
                     <img src="/logo.png" alt="Flower Shop Logo" className="logo" />
-                    <h1>Flower Shop</h1>
+                    <h1 style={style}>{adjective} Flower Shop</h1>
                 </div>
                 {token && (
                     <Button
