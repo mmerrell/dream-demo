@@ -24,7 +24,6 @@ temporal_client: Optional[Client] = None
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Startup
     global temporal_client
     from temporalio.contrib.pydantic import pydantic_data_converter
 
@@ -74,7 +73,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# In main.py, add to your middleware or responses
 @app.middleware("http")
 async def add_no_index_header(request, call_next):
     response = await call_next(request)
@@ -208,7 +206,6 @@ def read_products(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)
 
 @app.get("/")
 def read_root():
-    """A welcome message for the API root."""
     return {"message": "Welcome to the Dream Demo Flower Shop API!"}
 
 async def start_payment_workflow(order_id: int) -> dict:

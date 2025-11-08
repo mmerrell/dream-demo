@@ -6,34 +6,38 @@ import time
 
 import crud
 from database import SessionLocal
-from schemas import OrderCreate
+from schemas import OrderCreate, OrderItemCreate
+from workflows.order_fulfillment import OrderFulfillmentInput
 
 SLEEP_TIME=1
 
 @activity.defn
-async def create_order_activity(order_data: dict, user_id: int) -> dict:
+async def create_order_activity(input: OrderFulfillmentInput) -> dict:
     """Activity: Create order in database"""
-    activity.logger.info(f"Creating order with {len(order_data['items'])} items")
+    activity.logger.info(f"Creating order with {len(input.items)} items")
 
     db = SessionLocal()
     try:
-        order_create = OrderCreate(**order_data)
-        order = await asyncio.to_thread(crud.create_order_db, db, order_create, user_id)
+        order_items = [
+            OrderItemCreate(
+                product_id=item.product_id,
+                quantity=item.quantity,
+            )
+            for item in input.items
+        ]
+
+        order_create = OrderCreate(items=order_items)
+        order = await asyncio.to_thread(crud.create_order_db, db, order_create, input.user_id)
+
         return {
             "id": order.id,
             "status": order.status,
-            "owner_id": order.owner_id,
-            "created_at": order.created_at.isoformat(),
-            "items": [
-                {
-                    "id": item.id,
-                    "product_id": item.product_id,
-                    "quantity": item.quantity,
-                    "price_at_purchase": float(item.price_at_purchase),
-                }
-                for item in order.items
-            ],
+            "created_at": order.created_at.isoformat() if order.created_at else None
         }
+
+    except Exception as e:
+        activity.logger.error(f"Failed to create order: {e}")
+        raise
 
     finally:
         db.close()
@@ -148,3 +152,6 @@ async def send_confirmation_activity(order_id: int, customer_email: str) -> dict
         "timestamp": datetime.now().isoformat()
     }
 
+
+async def validate_order_rules():
+    return None

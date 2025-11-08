@@ -57,7 +57,7 @@ class ProductNotFoundError(Exception):
 def get_order(db: Session, order_id: int):
     return db.query(models.Order).filter(models.Order.id == order_id).first()
 
-def create_order_db(db: Session, order: schemas.OrderCreate, user_id: int):
+def create_order_db(db: Session, order: schemas.OrderCreate, user_id: int) -> models.Order:
     db_order = models.Order(owner_id=user_id)
     db.add(db_order)
     db.commit()
