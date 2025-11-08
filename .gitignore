@@ -51,6 +51,7 @@ terraform/.terraform.lock.hcl
 terraform/terraform.tfstate
 terraform/terraform.tfstate.backup
 terraform/*.tfvars
+*.tfvars
 terraform/crash.log
 
 # Generated files from deploy script
