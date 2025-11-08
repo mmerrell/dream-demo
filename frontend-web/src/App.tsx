@@ -359,8 +359,8 @@ function App() {
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
                                     required
-                                    slotProps={{
-                                        htmlInput: { 'aria-label': 'Email address for registration' }
+                                    InputProps={{
+                                        inputProps: { 'aria-label': 'Email address for registration' }
                                     }}
                                 />
                                 <TextField
@@ -372,8 +372,8 @@ function App() {
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
                                     required
-                                    slotProps={{
-                                        htmlInput: { 'aria-label': 'Password for registration' }
+                                    InputProps={{
+                                        inputProps: { 'aria-label': 'Password for registration' }
                                     }}
                                 />
                                 <Button
@@ -400,8 +400,8 @@ function App() {
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
                                     required
-                                    slotProps={{
-                                        htmlInput: { 'aria-label': 'Email address for login' }
+                                    InputProps={{
+                                        inputProps: { 'aria-label': 'Email address for login' }
                                     }}
                                 />
                                 <TextField
@@ -413,8 +413,8 @@ function App() {
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
                                     required
-                                    slotProps={{
-                                        htmlInput: { 'aria-label': 'Password for login' }
+                                    InputProps={{
+                                        inputProps: { 'aria-label': 'Password for login' }
                                     }}
                                 />
                                 <Button
