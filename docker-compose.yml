@@ -11,7 +11,9 @@ services:
       STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY}
       STRIPE_PUBLISHABLE_KEY: ${STRIPE_PUBLISHABLE_KEY}
     depends_on:
-      - db
+      db:
+        condition: service_healthy
+    restart: on-failure
     command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 
   db:
@@ -24,6 +26,11 @@ services:
       POSTGRES_PASSWORD: password
     ports:
       - "5432:5432"
+    healthcheck:  # Add health check
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   frontend:
     build: ./frontend-web

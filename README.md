@@ -391,7 +391,7 @@ For technical support or questions about this demo:
 
 3. **Start the application:**
 ```bash
-   docker compose -f docker-compose.public.yml up
+   docker compose -f docker-compose.yml up
 ```
 
 4. **Access the application:**
