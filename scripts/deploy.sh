@@ -24,11 +24,20 @@ if [ -z "$STRIPE_SECRET_KEY" ] || [ -z "$STRIPE_PUBLISHABLE_KEY" ]; then
     exit 1
 fi
 
-INSTANCE_IP=$(terraform -chdir=terraform output -raw instance_ip | tr -d '\n\r ')
+INSTANCE_IP=$(terraform -chdir=terraform output -raw instance_public_ip | tr -d '\n\r ')
 echo "Deploying to instance: $INSTANCE_IP"
 
+# Select the appropriate template based on sprint version
+if [ -f "docker-compose.${SPRINT_VERSION}.yml" ]; then
+    TEMPLATE_FILE="docker-compose.${SPRINT_VERSION}.yml"
+    echo "Using template: $TEMPLATE_FILE"
+else
+    TEMPLATE_FILE="docker-compose.sprint-1.yml"  # fallback
+    echo "Template for $SPRINT_VERSION not found, using fallback: $TEMPLATE_FILE"
+fi
+
 # Generate docker-compose with substituted variables
-SPRINT_VERSION=$SPRINT_VERSION INSTANCE_IP=$INSTANCE_IP envsubst < docker-compose.public.yml > docker-compose.generated.yml
+SPRINT_VERSION=$SPRINT_VERSION INSTANCE_IP=$INSTANCE_IP envsubst < $TEMPLATE_FILE > docker-compose.generated.yml
 
 # Copy files to instance
 scp -i ~/.ssh/mmerrell-sauce.pem docker-compose.generated.yml ec2-user@$INSTANCE_IP:~/docker-compose.yml
