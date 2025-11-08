@@ -69,6 +69,31 @@ resource "aws_security_group" "dream_demo" {
     Name   = "dream-demo-${var.sprint}-sg"
     Sprint = var.sprint
   }
+  # In terraform/main.tf, add these ingress rules:
+
+  ingress {
+    from_port   = 7233
+    to_port     = 7233
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+    description = "Temporal gRPC"
+  }
+
+  ingress {
+    from_port   = 8080
+    to_port     = 8080
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+    description = "Temporal UI"
+  }
+
+  ingress {
+    from_port   = 5433
+    to_port     = 5433
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+    description = "Temporal Postgres"
+  }
 }
 
 # EC2 Instance

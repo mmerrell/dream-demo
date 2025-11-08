@@ -24,7 +24,7 @@ if [ -z "$STRIPE_SECRET_KEY" ] || [ -z "$STRIPE_PUBLISHABLE_KEY" ]; then
     exit 1
 fi
 
-INSTANCE_IP=$(terraform -chdir=terraform output -raw instance_public_ip | tr -d '\n\r ')
+INSTANCE_IP=$(terraform -chdir=terraform output -raw instance_ip | tr -d '\n\r ')
 echo "Deploying to instance: $INSTANCE_IP"
 
 # Select the appropriate template based on sprint version
@@ -58,9 +58,7 @@ EOF
     docker-compose up -d
     sleep 10
 
-    # Copy seed script and run
-    docker cp ~/seed_database.py \$(docker-compose ps -q backend):/app/seed_database.py
-    docker-compose exec -T backend python seed_database.py
-"
+    # Run the seed script
+    python3 ~/seed_database.py"
 
 echo "Deployment complete! Frontend: http://$INSTANCE_IP:3000"
