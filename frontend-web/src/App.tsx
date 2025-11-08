@@ -621,6 +621,18 @@ function App() {
                 <div className="product-grid">
                     {products.map(product => (
                         <div key={product.id} className="product-card">
+                            {product.image_url && (
+                                <div className="product-image">
+                                  <img
+                                    src={product.image_url || '/images/placeholder-flower.jpg'}
+                                    alt={product.name}
+                                    onError={(e) => {
+                                      const img = e.target as HTMLImageElement;
+                                      img.src = '/images/placeholder-flower.jpg';
+                                    }}
+                                  />
+                                </div>
+                            )}
                             <h3>{product.name}</h3>
                             <p>{product.description}</p>
                             <p className="price">${Number(product.price).toFixed(2)}</p>

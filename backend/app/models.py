@@ -10,6 +10,7 @@ class Product(Base):
     description = Column(String)
     price = Column(Float(asdecimal=True))
     inventory_count = Column(Integer, default=0)
+    image_url = Column(String, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 

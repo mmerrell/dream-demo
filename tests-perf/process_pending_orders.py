@@ -7,7 +7,6 @@ API_URL = "http://localhost:8000"
 EMAIL = "mmerrell@gmail.com"
 PASSWORD = "a"
 
-
 async def login(session):
     """Login and get auth token"""
     login_data = aiohttp.FormData()
@@ -21,7 +20,6 @@ async def login(session):
         data = await resp.json()
         return data['access_token']
 
-
 async def get_pending_orders(session, token):
     """Get all pending orders"""
     headers = {'Authorization': f'Bearer {token}'}
@@ -30,7 +28,6 @@ async def get_pending_orders(session, token):
             raise Exception(f"Failed to get orders: {await resp.text()}")
         orders = await resp.json()
         return [o for o in orders if o['status'] == 'pending']
-
 
 async def process_payment(session, token, order_id, order_num):
     """Trigger payment processing for an order"""
@@ -58,7 +55,6 @@ async def process_payment(session, token, order_id, order_num):
         duration = (datetime.now() - start_time).total_seconds()
         print(f"❌ Order {order_num} (ID: {order_id}): Exception - {e} - {duration:.2f}s")
         return {"success": False, "order_id": order_id, "error": str(e)}
-
 
 async def main():
     print(f"{'=' * 60}")
@@ -122,7 +118,6 @@ async def main():
         print(f"🌐 Check Temporal UI: http://localhost:8080")
         print(f"📋 Watch worker logs: docker-compose logs -f payment-worker")
         print(f"\n⏳ Workflows will complete in ~30-40 seconds (with current activity delays)")
-
 
 if __name__ == "__main__":
     asyncio.run(main())

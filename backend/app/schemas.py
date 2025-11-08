@@ -10,6 +10,7 @@ class ProductBase(BaseModel):
     description: Optional[str] = None
     price: Decimal
     inventory_count: int
+    image_url: Optional[str] = None
 
 class ProductCreate(ProductBase):
     pass
