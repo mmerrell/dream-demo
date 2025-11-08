@@ -590,7 +590,7 @@ function App() {
                                     clientSecret={clientSecret}
                                     onSuccess={() => {
                                         showSnackbar('Payment successful!', 'success');
-                                        fetch(`http://localhost:8000/orders/${selectedOrder.id}/process-payment`, {
+                                        fetch(`${process.env.REACT_APP_API_URL}/orders/${selectedOrder.id}/process-payment`, {
                                             method: 'POST',
                                             headers: {
                                                 'Authorization': `Bearer ${token}`,

@@ -18,7 +18,7 @@ export interface OrderCreate {
     items: OrderItemCreate[];
 }
 
-const API_URL = 'http://localhost:8000';
+const API_URL = process.env.REACT_APP_API_URL || "http://localhost:8000/";
 
 export const register = async (user: UserCreate): Promise<User> => {
     const response = await axios.post(`${API_URL}/users/`, user);
