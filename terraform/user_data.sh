@@ -6,6 +6,8 @@ set -e
 SPRINT_NAME="${sprint_name}"
 DOCKER_REGISTRY="${docker_registry}"
 DOMAIN_NAME="${domain_name}"
+STRIPE_SECRET_KEY="${stripe_secret_key}"
+STRIPE_PUBLISHABLE_KEY="${stripe_publishable_key}"
 
 echo "Starting deployment for $SPRINT_NAME at $DOMAIN_NAME"
 
@@ -55,7 +57,8 @@ server {
     }
 
     location /api/ {
-        proxy_pass http://backend/;
+        rewrite ^/api/(.*) /\$1 break;
+        proxy_pass http://backend;
         proxy_set_header Host \$host;
         proxy_set_header X-Real-IP \$remote_addr;
         proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
@@ -72,7 +75,7 @@ server {
 
     location /health {
         proxy_pass http://backend/health;
-        proxy_Set_header Host \$host;
+        proxy_set_header Host \$host;
         proxy_set_header X-Real-IP \$remote_addr;
         proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto \$scheme;
@@ -92,7 +95,62 @@ mkdir -p /home/ec2-user/app
 cd /home/ec2-user/app
 
 # Create docker-compose file
-cat > docker-compose.yml << EOF
+# After the existing variables section, add sprint-specific logic
+echo "Creating docker-compose file for $SPRINT_NAME..."
+
+if [ "$SPRINT_NAME" = "sprint-1" ] || [ "$SPRINT_NAME" = "sprint-2" ]; then
+  # Simple docker-compose for sprint-1 and sprint-2 (no Temporal workers)
+  cat > docker-compose.yml << EOF
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: dreamdemo
+      POSTGRES_USER: dreamuser
+      POSTGRES_PASSWORD: dreampass
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dreamuser -d dreamdemo"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    image: $DOCKER_REGISTRY/dream-demo-backend:$SPRINT_NAME
+    environment:
+      DATABASE_URL: postgresql://dreamuser:dreampass@db:5432/dreamdemo
+      STRIPE_SECRET_KEY: $STRIPE_SECRET_KEY
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  frontend:
+    image: $DOCKER_REGISTRY/dream-demo-frontend:$SPRINT_NAME
+    environment:
+      REACT_APP_SPRINT_VERSION: $SPRINT_NAME
+      REACT_APP_API_URL: http://$DOMAIN_NAME/api
+      REACT_APP_STRIPE_PUBLISHABLE_KEY: $STRIPE_PUBLISHABLE_KEY
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+EOF
+
+else
+  # Complex docker-compose for sprint-3 and later (with Temporal)
+  cat > docker-compose.yml << EOF
 version: '3.8'
 
 services:
@@ -120,7 +178,6 @@ services:
       - POSTGRES_USER=dreamuser
       - POSTGRES_PWD=dreampass
       - POSTGRES_SEEDS=db
-      - DYNAMIC_CONFIG_FILE_PATH=config/dynamicconfig/development-sql.yaml
     ports:
       - "7233:7233"
       - "8080:8080"
@@ -130,9 +187,12 @@ services:
 
   backend:
     image: $DOCKER_REGISTRY/dream-demo-backend:$SPRINT_NAME
+    command: ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+    working_dir: /app/app
     environment:
       DATABASE_URL: postgresql://dreamuser:dreampass@db:5432/dreamdemo
       TEMPORAL_ADDRESS: temporal:7233
+      STRIPE_SECRET_KEY: $STRIPE_SECRET_KEY
     ports:
       - "8000:8000"
     depends_on:
@@ -147,6 +207,7 @@ services:
     environment:
       REACT_APP_SPRINT_VERSION: $SPRINT_NAME
       REACT_APP_API_URL: http://$DOMAIN_NAME/api
+      REACT_APP_STRIPE_PUBLISHABLE_KEY: $STRIPE_PUBLISHABLE_KEY
     ports:
       - "3000:3000"
     depends_on:
@@ -157,11 +218,15 @@ volumes:
   postgres_data:
 EOF
 
+fi
+
 # Create environment file
 cat > .env << EOF
 DOCKER_REGISTRY=$DOCKER_REGISTRY
 SPRINT_NAME=$SPRINT_NAME
 DOMAIN_NAME=$DOMAIN_NAME
+STRIPE_SECRET_KEY=$STRIPE_SECRET_KEY
+STRIPE_PUBLISHABLE_KEY=$STRIPE_PUBLISHABLE_KEY
 EOF
 
 # Set ownership
@@ -187,6 +252,15 @@ for i in {1..30}; do
     echo "Waiting for backend... ($i/30)"
     sleep 10
 done
+
+echo "Seeding database with sample products..."
+docker-compose exec -T db psql -U dreamuser -d dreamdemo -c "
+INSERT INTO products (id, name, description, price, inventory_count) VALUES
+(1, 'Red Rose Bouquet', 'Beautiful red roses perfect for any occasion', 29.99, 50),
+(2, 'Sunflower Arrangement', 'Bright and cheerful sunflowers', 24.99, 30),
+(3, 'Mixed Wildflowers', 'Colorful assortment of wildflowers', 19.99, 25)
+ON CONFLICT (id) DO NOTHING;
+" || echo "Database seeding completed or failed gracefully"
 
 # Verify installations
 docker --version

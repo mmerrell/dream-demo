@@ -1,10 +1,8 @@
-
-
 import requests
 import random
 import time
 
-API_URL = "http://localhost:8000/products/"
+API_URL = "http://sprint-3.dreamdemo.xyz/api/products/"
 
 ADJECTIVES = ["Vibrant", "Classic", "Elegant", "Rustic", "Sunshine", "Midnight", "Enchanted", "Jubilant", "Serene", "Blushing", "Golden", "Winter"]
 FLOWER_NAMES = ["Rose", "Lily", "Tulip", "Orchid", "Daisy", "Sunflower", "Peony", "Hydrangea", "Carnation", "Freesia", "Lavender", "Marigold"]

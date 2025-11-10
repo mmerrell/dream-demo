@@ -131,6 +131,8 @@ resource "aws_instance" "dream_demo" {
     sprint_name     = each.key
     docker_registry = var.docker_registry
     domain_name     = "${each.key}.${var.domain_name}"
+    stripe_secret_key      = var.stripe_secret_key
+    stripe_publishable_key = var.stripe_publishable_key
   })
 
   root_block_device {

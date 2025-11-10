@@ -40,3 +40,14 @@ variable "sprint" {
   type        = string
   default     = "sprint-1"
 }
+
+variable "stripe_secret_key" {
+  description = "Stripe secret key for backend"
+  type        = string
+  sensitive   = true
+}
+
+variable "stripe_publishable_key" {
+  description = "Stripe publishable key for frontend"
+  type        = string
+}
