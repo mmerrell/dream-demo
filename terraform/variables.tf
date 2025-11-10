@@ -25,7 +25,7 @@ variable "instance_type" {
 variable "key_name" {
   description = "AWS key pair name"
   type        = string
-  default     = "mmerrell-pem"  # Updated to match your current setup
+  default     = "mmerrell-sauce"
 }
 
 variable "docker_registry" {

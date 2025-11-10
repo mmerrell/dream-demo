@@ -12,8 +12,8 @@ echo "Starting deployment for $SPRINT_NAME at $DOMAIN_NAME"
 # Update system
 yum update -y
 
-# Install Docker and other dependencies
-yum install -y docker git curl
+# Install Docker and other dependencies (fix curl conflict)
+yum install -y docker git --allowerasing
 systemctl start docker
 systemctl enable docker
 usermod -a -G docker ec2-user
@@ -36,10 +36,6 @@ upstream frontend {
 
 upstream backend {
     server localhost:8000;
-}
-
-upstream temporal {
-    server localhost:8080;
 }
 
 server {
@@ -74,17 +70,9 @@ server {
         proxy_set_header X-Forwarded-Proto \$scheme;
     }
 
-    location /temporal {
-        proxy_pass http://temporal;
-        proxy_set_header Host \$host;
-        proxy_set_header X-Real-IP \$remote_addr;
-        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto \$scheme;
-    }
-
     location /health {
         proxy_pass http://backend/health;
-        proxy_set_header Host \$host;
+        proxy_Set_header Host \$host;
         proxy_set_header X-Real-IP \$remote_addr;
         proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto \$scheme;

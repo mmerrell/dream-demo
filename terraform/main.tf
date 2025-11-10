@@ -172,23 +172,23 @@ resource "aws_route53_record" "sprint_records" {
 }
 
 # Wait for instances to be ready
-resource "null_resource" "wait_for_instances" {
-  for_each = toset(var.sprints_to_deploy)
-
-  depends_on = [aws_eip.dream_demo]
-
-  provisioner "remote-exec" {
-    inline = [
-      "cloud-init status --wait",
-      "docker --version",
-      "docker-compose --version"
-    ]
-
-    connection {
-      type        = "ssh"
-      user        = "ec2-user"
-      private_key = file("~/.ssh/${var.key_name}.pem")
-      host        = aws_eip.dream_demo[each.key].public_ip
-    }
-  }
-}
+# resource "null_resource" "wait_for_instances" {
+#   for_each = toset(var.sprints_to_deploy)
+#
+#   depends_on = [aws_eip.dream_demo]
+#
+#   provisioner "remote-exec" {
+#     inline = [
+#       "cloud-init status --wait",
+#       "docker --version",
+#       "docker-compose --version"
+#     ]
+#
+#     connection {
+#       type        = "ssh"
+#       user        = "ec2-user"
+#       private_key = file("~/.ssh/${var.key_name}.pem")
+#       host        = aws_eip.dream_demo[each.key].public_ip
+#     }
+#   }
+# }
