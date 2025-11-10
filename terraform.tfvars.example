@@ -1,3 +1,0 @@
-sprint = "sprint-2"
-key_name = "your-aws-key-pair-name"
-docker_registry = "your-dockerhub-username"

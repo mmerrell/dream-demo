@@ -1,7 +1,19 @@
-variable "sprint" {
-  description = "Sprint name (sprint-1, sprint-2, etc.)"
+variable "domain_name" {
+  description = "Base domain name"
   type        = string
-  default     = "sprint-2"
+  default     = "dreamdemo.xyz"
+}
+
+variable "sprints_to_deploy" {
+  description = "List of sprints to deploy"
+  type        = list(string)
+  default     = ["sprint-1", "sprint-2", "sprint-3"]
+}
+
+variable "aws_region" {
+  description = "AWS region"
+  type        = string
+  default     = "us-east-2"  # Keeping your existing region
 }
 
 variable "instance_type" {
@@ -13,11 +25,18 @@ variable "instance_type" {
 variable "key_name" {
   description = "AWS key pair name"
   type        = string
-  default     = "mmerrell-sauce"
+  default     = "mmerrell-pem"  # Updated to match your current setup
 }
 
 variable "docker_registry" {
   description = "Docker registry prefix"
   type        = string
   default     = "mmerrell"
+}
+
+# Legacy variables for backward compatibility
+variable "sprint" {
+  description = "Sprint name (deprecated - use sprints_to_deploy)"
+  type        = string
+  default     = "sprint-1"
 }

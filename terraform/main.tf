@@ -15,29 +15,51 @@ terraform {
 }
 
 provider "aws" {
-  region = "us-east-2"
+  region = var.aws_region
 }
 
 # Data source for latest Amazon Linux 2023 AMI
 data "aws_ami" "amazon_linux" {
   most_recent = true
   owners      = ["amazon"]
-  
+
   filter {
     name   = "name"
     values = ["al2023-ami-*-x86_64"]
   }
 }
 
-# Security Group
+# Data source for hosted zone
+data "aws_route53_zone" "main" {
+  name         = var.domain_name
+  private_zone = false
+}
+
+# Security Group (shared across all sprint instances)
 resource "aws_security_group" "dream_demo" {
-  name_prefix = "dream-demo-${var.sprint}-"
-  description = "Security group for Dream Demo ${var.sprint}"
+  name_prefix = "dream-demo-"
+  description = "Security group for Dream Demo instances"
 
   ingress {
     description = "SSH"
     from_port   = 22
     to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    description = "HTTP"
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    description = "HTTPS"
+    from_port   = 443
+    to_port     = 443
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
@@ -58,6 +80,30 @@ resource "aws_security_group" "dream_demo" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
+  ingress {
+    description = "Temporal gRPC"
+    from_port   = 7233
+    to_port     = 7233
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    description = "Temporal UI"
+    from_port   = 8080
+    to_port     = 8080
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    description = "PostgreSQL"
+    from_port   = 5432
+    to_port     = 5432
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
   egress {
     from_port   = 0
     to_port     = 0
@@ -66,48 +112,27 @@ resource "aws_security_group" "dream_demo" {
   }
 
   tags = {
-    Name   = "dream-demo-${var.sprint}-sg"
-    Sprint = var.sprint
-  }
-  # In terraform/main.tf, add these ingress rules:
-
-  ingress {
-    from_port   = 7233
-    to_port     = 7233
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-    description = "Temporal gRPC"
-  }
-
-  ingress {
-    from_port   = 8080
-    to_port     = 8080
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-    description = "Temporal UI"
-  }
-
-  ingress {
-    from_port   = 5433
-    to_port     = 5433
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-    description = "Temporal Postgres"
+    Name    = "dream-demo-sg"
+    Project = "DreamDemo"
   }
 }
 
-# EC2 Instance
+# EC2 Instances for each sprint
 resource "aws_instance" "dream_demo" {
+  for_each = toset(var.sprints_to_deploy)
+
   ami           = data.aws_ami.amazon_linux.id
   instance_type = var.instance_type
   key_name      = var.key_name
-  
+
   vpc_security_group_ids = [aws_security_group.dream_demo.id]
-  
+
   user_data = templatefile("${path.module}/user_data.sh", {
-    sprint = var.sprint
+    sprint_name     = each.key
+    docker_registry = var.docker_registry
+    domain_name     = "${each.key}.${var.domain_name}"
   })
-  
+
   root_block_device {
     volume_type = "gp3"
     volume_size = 30
@@ -115,26 +140,43 @@ resource "aws_instance" "dream_demo" {
   }
 
   tags = {
-    Name   = "dream-demo-${var.sprint}"
-    Sprint = var.sprint
+    Name    = "dream-demo-${each.key}"
+    Sprint  = each.key
+    Project = "DreamDemo"
   }
 }
 
-# Elastic IP
+# Elastic IPs for each sprint instance
 resource "aws_eip" "dream_demo" {
-  instance = aws_instance.dream_demo.id
+  for_each = toset(var.sprints_to_deploy)
+
+  instance = aws_instance.dream_demo[each.key].id
   domain   = "vpc"
 
   tags = {
-    Name   = "dream-demo-${var.sprint}-eip"
-    Sprint = var.sprint
+    Name    = "dream-demo-${each.key}-eip"
+    Sprint  = each.key
+    Project = "DreamDemo"
   }
 }
 
-# Wait for instance to be ready
-resource "null_resource" "wait_for_instance" {
+# Route 53 A records for each sprint
+resource "aws_route53_record" "sprint_records" {
+  for_each = toset(var.sprints_to_deploy)
+
+  zone_id = data.aws_route53_zone.main.zone_id
+  name    = "${each.key}.${var.domain_name}"
+  type    = "A"
+  ttl     = "300"
+  records = [aws_eip.dream_demo[each.key].public_ip]
+}
+
+# Wait for instances to be ready
+resource "null_resource" "wait_for_instances" {
+  for_each = toset(var.sprints_to_deploy)
+
   depends_on = [aws_eip.dream_demo]
-  
+
   provisioner "remote-exec" {
     inline = [
       "cloud-init status --wait",
@@ -146,7 +188,7 @@ resource "null_resource" "wait_for_instance" {
       type        = "ssh"
       user        = "ec2-user"
       private_key = file("~/.ssh/${var.key_name}.pem")
-      host        = aws_eip.dream_demo.public_ip
+      host        = aws_eip.dream_demo[each.key].public_ip
     }
   }
 }
