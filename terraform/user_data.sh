@@ -202,6 +202,32 @@ services:
         condition: service_started
     restart: unless-stopped
 
+process-order-worker:
+    platform: linux/amd64
+    image: $DOCKER_REGISTRY/dream-demo-backend:$SPRINT_NAME
+    command: python -B process_order_worker.py
+    environment:
+      DATABASE_URL: postgresql://dreamuser:dreampass@db:5432/dreamdemo  # Match your DB config
+      STRIPE_SECRET_KEY: $STRIPE_SECRET_KEY
+      TEMPORAL_ADDRESS: temporal:7233  # Match backend env var name
+    depends_on:
+      - db
+      - temporal
+    restart: unless-stopped
+
+  process-payment-worker:
+    platform: linux/amd64
+    image: $DOCKER_REGISTRY/dream-demo-backend:$SPRINT_NAME
+    command: python -B process_payment_worker.py
+    environment:
+      DATABASE_URL: postgresql://dreamuser:dreampass@db:5432/dreamdemo
+      STRIPE_SECRET_KEY: $STRIPE_SECRET_KEY
+      TEMPORAL_ADDRESS: temporal:7233
+    depends_on:
+      - db
+      - temporal
+    restart: unless-stopped
+
   frontend:
     image: $DOCKER_REGISTRY/dream-demo-frontend:$SPRINT_NAME
     environment:
