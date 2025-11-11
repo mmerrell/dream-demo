@@ -178,6 +178,7 @@ services:
       - POSTGRES_USER=dreamuser
       - POSTGRES_PWD=dreampass
       - POSTGRES_SEEDS=db
+      - TEMPORAL_BIND_ON_IP=0.0.0.0
     ports:
       - "7233:7233"
       - "8080:8080"
@@ -202,10 +203,11 @@ services:
         condition: service_started
     restart: unless-stopped
 
-process-order-worker:
+  process-order-worker:
     platform: linux/amd64
     image: $DOCKER_REGISTRY/dream-demo-backend:$SPRINT_NAME
     command: python -B process_order_worker.py
+    working_dir: /app/app
     environment:
       DATABASE_URL: postgresql://dreamuser:dreampass@db:5432/dreamdemo  # Match your DB config
       STRIPE_SECRET_KEY: $STRIPE_SECRET_KEY
@@ -219,6 +221,7 @@ process-order-worker:
     platform: linux/amd64
     image: $DOCKER_REGISTRY/dream-demo-backend:$SPRINT_NAME
     command: python -B process_payment_worker.py
+    working_dir: /app/app
     environment:
       DATABASE_URL: postgresql://dreamuser:dreampass@db:5432/dreamdemo
       STRIPE_SECRET_KEY: $STRIPE_SECRET_KEY

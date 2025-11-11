@@ -155,6 +155,9 @@ resource "aws_eip" "dream_demo" {
   instance = aws_instance.dream_demo[each.key].id
   domain   = "vpc"
 
+  # Add explicit dependency to prevent timing issues
+  depends_on = [aws_instance.dream_demo]
+
   tags = {
     Name    = "dream-demo-${each.key}-eip"
     Sprint  = each.key
