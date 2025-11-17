@@ -65,7 +65,6 @@ const sprintVersion = process.env.REACT_APP_SPRINT_VERSION || 'dev';
 const { adjective, style } = getSprintStyling(sprintVersion);
 
 const SprintBadge = () => {
-
   const sprintConfig: Record<string, { emoji: string; name: string; color: string }> = {
     'sprint-1': { emoji: '🌹', name: 'sprint-1', color: '#e74c3c' },
     'sprint-2': { emoji: '🌸', name: 'sprint-2', color: '#ff6b9d' },
