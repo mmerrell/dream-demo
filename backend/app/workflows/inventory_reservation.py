@@ -7,7 +7,7 @@ from typing import List, Optional
 
 from temporalio import workflow
 
-from workflows.order_fulfillment import TemporalOrderItem
+from models import TemporalOrderItem
 
 DEFAULT_RETRY_POLICY = RetryPolicy(
     maximum_attempts=3,

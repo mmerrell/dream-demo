@@ -10,6 +10,9 @@ services:
       - DATABASE_URL=postgresql://user:password@db/mydatabase
       - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}
       - TEMPORAL_HOST=temporal:7233
+      - BACKTRACE_ENABLED="true"
+      - BACKTRACE_TOKEN="${BACKTRACE_TOKEN:-}"
+      - SPRINT_VERSION="sprint-4"
     env_file:
       - .env
     depends_on:
@@ -38,14 +41,15 @@ services:
       context: ./frontend-web
       dockerfile: Dockerfile
     ports:
-      - "3000:3000"
+      - "3000:80"
     volumes:
       - ./frontend-web:/app
       - /app/node_modules
     environment:
       - CHOKIDAR_USEPOLLING=true
       - REACT_APP_STRIPE_PUBLISHABLE_KEY=${STRIPE_PUBLISHABLE_KEY}
-      - REACT_APP_SPRINT_VERSION=sprint-4
+      - SPRINT_VERSION=sprint-4
+      - REACT_APP_BACKTRACE_ENABLED=${BACKTRACE_ENABLED:-false}
     env_file:
       - .env
 

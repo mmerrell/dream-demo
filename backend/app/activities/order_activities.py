@@ -7,7 +7,7 @@ import time
 import crud
 from database import SessionLocal
 from schemas import OrderCreate, OrderItemCreate
-from workflows.order_fulfillment import OrderFulfillmentInput
+from models import OrderFulfillmentInput
 
 SLEEP_TIME=1
 

@@ -7,6 +7,7 @@ import { Elements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
 import { useSnackbar } from './contexts/SnackbarContext';
 import axios from 'axios';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import {
     register,
     login,
@@ -308,6 +309,13 @@ function App() {
         payment_failed: false
     });
 
+    const triggerError = () => {
+      if (Math.random() > 0.8) {
+        throw new Error(`Sprint ${sprintVersion} demo error`);
+      }
+    };
+    (window as any).triggerError = triggerError;
+
     const toggleFilter = (status: keyof typeof orderFilters) => {
         setOrderFilters(prev => ({
             ...prev,
@@ -321,377 +329,379 @@ function App() {
     );
 
     return (
-        <div className="App">
-            <SprintBadge />
-            <header className="App-header">
-                <div className="header-left">
-                    <img src="/logo.png" alt="Flower Shop Logo" className="logo" />
-                    <h1 style={style}>{adjective} Flower Shop</h1>
-                </div>
-                {token && (
-                    <Button
-                        variant="outlined"
-                        color="inherit"
-                        onClick={() => {
-                            setToken(null);
-                            setCurrentUser(null);
-                            localStorage.removeItem('authToken');
-                        }}
-                        aria-label="Logout from your account"
-                    >
-                        Logout
-                    </Button>
-                )}
-            </header>
-            <main>
-                {!token ? (
-                    <div className="auth-container">
-                        <div className="auth-form">
-                            <h2>Register</h2>
-                            <form onSubmit={handleRegister} aria-label="Registration form">
-                                <TextField
-                                    type="email"
-                                    label="Email"
-                                    variant="outlined"
-                                    fullWidth
-                                    margin="normal"
-                                    value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
-                                    required
-                                    InputProps={{
-                                        inputProps: { 'aria-label': 'Email address for registration' }
-                                    }}
-                                />
-                                <TextField
-                                    type="password"
-                                    label="Password"
-                                    variant="outlined"
-                                    fullWidth
-                                    margin="normal"
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
-                                    required
-                                    InputProps={{
-                                        inputProps: { 'aria-label': 'Password for registration' }
-                                    }}
-                                />
-                                <Button
-                                    type="submit"
-                                    variant="contained"
-                                    color="primary"
-                                    fullWidth
-                                    sx={{ mt: 2 }}
-                                    aria-label="Submit registration"
-                                >
-                                    Register
-                                </Button>
-                            </form>
-                        </div>
-                        <div className="auth-form">
-                            <h2>Login</h2>
-                            <form onSubmit={handleLogin} aria-label="Login form">
-                                <TextField
-                                    type="email"
-                                    label="Email"
-                                    variant="outlined"
-                                    fullWidth
-                                    margin="normal"
-                                    value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
-                                    required
-                                    InputProps={{
-                                        inputProps: { 'aria-label': 'Email address for login' }
-                                    }}
-                                />
-                                <TextField
-                                    type="password"
-                                    label="Password"
-                                    variant="outlined"
-                                    fullWidth
-                                    margin="normal"
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
-                                    required
-                                    InputProps={{
-                                        inputProps: { 'aria-label': 'Password for login' }
-                                    }}
-                                />
-                                <Button
-                                    type="submit"
-                                    variant="contained"
-                                    color="primary"
-                                    fullWidth
-                                    sx={{ mt: 2 }}
-                                    aria-label="Submit login"
-                                >
-                                    Login
-                                </Button>
-                            </form>
-                        </div>
+        <ErrorBoundary sprintVersion={sprintVersion}>
+            <div className="App">
+                <SprintBadge />
+                <header className="App-header">
+                    <div className="header-left">
+                        <img src="/logo.png" alt="Flower Shop Logo" className="logo" />
+                        <h1 style={style}>{adjective} Flower Shop</h1>
                     </div>
-                ) : (
-                    <div>
-                        <h2>Welcome, {currentUser?.email}!</h2>
-
-                        {/* Shopping Cart */}
-                        <div className="cart-container">
-                            <h3>Shopping Cart</h3>
-                            {cart.size === 0 ? (
-                                <p>Your cart is empty</p>
-                            ) : (
-                                <>
-                                    {cartItems.map(({ product, quantity }) => (
-                                        product && (
-                                            <div key={product.id} className="cart-item">
-                                                <span>{product.name}</span>
-                                                <span>Qty: {quantity}</span>
-                                                <span>${(Number(product.price) * quantity).toFixed(2)}</span>
-                                                <Button
-                                                    variant="contained"
-                                                    size="small"
-                                                    onClick={() => addToCart(product.id)}
-                                                    aria-label={`Increase quantity of ${product.name}`}
-                                                >
-                                                    +
-                                                </Button>
-                                                <Button
-                                                    variant="outlined"
-                                                    size="small"
-                                                    onClick={() => removeFromCart(product.id)}
-                                                    aria-label={`Decrease quantity of ${product.name}`}
-                                                >
-                                                    -
-                                                </Button>
-                                            </div>
-                                        )
-                                    ))}
-                                    <div className="cart-total">
-                                        <strong>Total: ${cartTotal.toFixed(2)}</strong>
-                                    </div>
+                    {token && (
+                        <Button
+                            variant="outlined"
+                            color="inherit"
+                            onClick={() => {
+                                setToken(null);
+                                setCurrentUser(null);
+                                localStorage.removeItem('authToken');
+                            }}
+                            aria-label="Logout from your account"
+                        >
+                            Logout
+                        </Button>
+                    )}
+                </header>
+                <main>
+                    {!token ? (
+                        <div className="auth-container">
+                            <div className="auth-form">
+                                <h2>Register</h2>
+                                <form onSubmit={handleRegister} aria-label="Registration form">
+                                    <TextField
+                                        type="email"
+                                        label="Email"
+                                        variant="outlined"
+                                        fullWidth
+                                        margin="normal"
+                                        value={email}
+                                        onChange={(e) => setEmail(e.target.value)}
+                                        required
+                                        InputProps={{
+                                            inputProps: { 'aria-label': 'Email address for registration' }
+                                        }}
+                                    />
+                                    <TextField
+                                        type="password"
+                                        label="Password"
+                                        variant="outlined"
+                                        fullWidth
+                                        margin="normal"
+                                        value={password}
+                                        onChange={(e) => setPassword(e.target.value)}
+                                        required
+                                        InputProps={{
+                                            inputProps: { 'aria-label': 'Password for registration' }
+                                        }}
+                                    />
                                     <Button
-                                        onClick={handlePlaceOrder}
+                                        type="submit"
                                         variant="contained"
-                                        color="success"
+                                        color="primary"
                                         fullWidth
                                         sx={{ mt: 2 }}
-                                        aria-label={`Place order for ${cart.size} items totaling ${cartTotal.toFixed(2)}`}
+                                        aria-label="Submit registration"
                                     >
-                                        Place Order
+                                        Register
                                     </Button>
-                                </>
-                            )}
+                                </form>
+                            </div>
+                            <div className="auth-form">
+                                <h2>Login</h2>
+                                <form onSubmit={handleLogin} aria-label="Login form">
+                                    <TextField
+                                        type="email"
+                                        label="Email"
+                                        variant="outlined"
+                                        fullWidth
+                                        margin="normal"
+                                        value={email}
+                                        onChange={(e) => setEmail(e.target.value)}
+                                        required
+                                        InputProps={{
+                                            inputProps: { 'aria-label': 'Email address for login' }
+                                        }}
+                                    />
+                                    <TextField
+                                        type="password"
+                                        label="Password"
+                                        variant="outlined"
+                                        fullWidth
+                                        margin="normal"
+                                        value={password}
+                                        onChange={(e) => setPassword(e.target.value)}
+                                        required
+                                        InputProps={{
+                                            inputProps: { 'aria-label': 'Password for login' }
+                                        }}
+                                    />
+                                    <Button
+                                        type="submit"
+                                        variant="contained"
+                                        color="primary"
+                                        fullWidth
+                                        sx={{ mt: 2 }}
+                                        aria-label="Submit login"
+                                    >
+                                        Login
+                                    </Button>
+                                </form>
+                            </div>
                         </div>
+                    ) : (
+                        <div>
+                            <h2>Welcome, {currentUser?.email}!</h2>
 
-                        {/* Orders List */}
-                        <div className="orders-container">
-                            <h2>Your Orders</h2>
-
-                            {/* Filter Buttons */}
-                            <div style={{
-                                display: 'flex',
-                                gap: '8px',
-                                marginBottom: '16px',
-                                flexWrap: 'wrap'
-                            }}>
-                                <Button
-                                    variant={orderFilters.pending ? "contained" : "outlined"}
-                                    color="warning"
-                                    size="small"
-                                    onClick={() => toggleFilter('pending')}
-                                    aria-label="Toggle pending orders"
-                                >
-                                    ⏳ Pending
-                                </Button>
-                                <Button
-                                    variant={orderFilters.paid ? "contained" : "outlined"}
-                                    color="info"
-                                    size="small"
-                                    onClick={() => toggleFilter('paid')}
-                                    aria-label="Toggle paid orders"
-                                >
-                                    💳 Paid
-                                </Button>
-                                <Button
-                                    variant={orderFilters.processing ? "contained" : "outlined"}
-                                    color="info"
-                                    size="small"
-                                    onClick={() => toggleFilter('processing')}
-                                    aria-label="Toggle processing orders"
-                                >
-                                    📦 Processing
-                                </Button>
-                                <Button
-                                    variant={orderFilters.completed ? "contained" : "outlined"}
-                                    color="success"
-                                    size="small"
-                                    onClick={() => toggleFilter('completed')}
-                                    aria-label="Toggle completed orders"
-                                >
-                                    ✓ Completed
-                                </Button>
-                                <Button
-                                    variant={orderFilters.cancelled ? "contained" : "outlined"}
-                                    color="error"
-                                    size="small"
-                                    onClick={() => toggleFilter('cancelled')}
-                                    aria-label="Toggle cancelled orders"
-                                >
-                                    ✗ Cancelled
-                                </Button>
-                                <Button
-                                    variant={orderFilters.payment_failed ? "contained" : "outlined"}
-                                    color="error"
-                                    size="small"
-                                    onClick={() => toggleFilter('payment_failed')}
-                                    aria-label="Toggle payment failed orders"
-                                >
-                                    ⚠ Payment Failed
-                                </Button>
+                            {/* Shopping Cart */}
+                            <div className="cart-container">
+                                <h3>Shopping Cart</h3>
+                                {cart.size === 0 ? (
+                                    <p>Your cart is empty</p>
+                                ) : (
+                                    <>
+                                        {cartItems.map(({ product, quantity }) => (
+                                            product && (
+                                                <div key={product.id} className="cart-item">
+                                                    <span>{product.name}</span>
+                                                    <span>Qty: {quantity}</span>
+                                                    <span>${(Number(product.price) * quantity).toFixed(2)}</span>
+                                                    <Button
+                                                        variant="contained"
+                                                        size="small"
+                                                        onClick={() => addToCart(product.id)}
+                                                        aria-label={`Increase quantity of ${product.name}`}
+                                                    >
+                                                        +
+                                                    </Button>
+                                                    <Button
+                                                        variant="outlined"
+                                                        size="small"
+                                                        onClick={() => removeFromCart(product.id)}
+                                                        aria-label={`Decrease quantity of ${product.name}`}
+                                                    >
+                                                        -
+                                                    </Button>
+                                                </div>
+                                            )
+                                        ))}
+                                        <div className="cart-total">
+                                            <strong>Total: ${cartTotal.toFixed(2)}</strong>
+                                        </div>
+                                        <Button
+                                            onClick={handlePlaceOrder}
+                                            variant="contained"
+                                            color="success"
+                                            fullWidth
+                                            sx={{ mt: 2 }}
+                                            aria-label={`Place order for ${cart.size} items totaling ${cartTotal.toFixed(2)}`}
+                                        >
+                                            Place Order
+                                        </Button>
+                                    </>
+                                )}
                             </div>
 
-                            {visibleOrders.length === 0 ? (
-                                <p>No orders to display</p>
-                            ) : (
-                                visibleOrders.map(order => (
-                                    <div key={order.id} className="order-card">
-                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                            <h3>Order #{order.id}</h3>
-                                            {getStatusChip(order.status)}
-                                        </div>
-                                        <p><strong>Total: ${order.items.reduce((sum: number, item: any) =>
-                                            sum + (Number(item.price_at_purchase) * item.quantity), 0
-                                        ).toFixed(2)}</strong></p>
+                            {/* Orders List */}
+                            <div className="orders-container">
+                                <h2>Your Orders</h2>
 
-                                        <div className="order-items">
-                                            {order.items.map((item: any, idx: number) => (
-                                                <div key={item.id || idx} className="order-item">
-                                                    <span className="order-item-name">Product ID: {item.product_id}</span>
-                                                    <span className="order-item-qty">Qty: {item.quantity}</span>
-                                                    <span className="order-item-price">${Number(item.price_at_purchase).toFixed(2)}</span>
-                                                </div>
-                                            ))}
-                                        </div>
-
-                                        {order.status === 'pending' && (
-                                            <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
-                                                <Button
-                                                    variant="contained"
-                                                    color="success"
-                                                    fullWidth
-                                                    onClick={() => handlePayNow(order)}
-                                                    aria-label={`Pay now for order ${order.id} totaling ${order.items.reduce((sum: number, item: any) => 
-                                                        sum + (Number(item.price_at_purchase) * item.quantity), 0
-                                                    ).toFixed(2)}`}                                                >
-                                                    Pay Now
-                                                </Button>
-                                                <Button
-                                                    variant="outlined"
-                                                    color="error"
-                                                    fullWidth
-                                                    onClick={() => handleCancelOrder(order.id)}
-                                                    aria-label={`Cancel order ${order.id}`}
-                                                >
-                                                    Cancel Order
-                                                </Button>
-                                            </div>
-                                        )}
-                                    </div>
-                                ))
-                            )}
-                        </div>
-                    </div>
-                )}
-
-                {/* Payment Modal */}
-                {selectedOrder && clientSecret && (
-                    <>
-                        <div className="payment-modal-overlay"
-                             onClick={() => {
-                                 setSelectedOrder(null);
-                                 setClientSecret(null);
-                             }}
-                             aria-label="Close payment modal"
-                             role="button"
-                             tabIndex={0}
-                        />
-                        <div className="payment-modal"
-                            role="dialog"
-                            aria-labelledby="payment-modal-title"
-                            aria-describedby="payment-modal-description"
-                        >
-                            <h3 id="payment-modal-title">Pay for Order #{selectedOrder.id}</h3>
-                            <p id="payment-modal-description" className="sr-only">
-                                Enter your payment information to complete your order
-                            </p>
-
-                            <Elements stripe={stripePromise}>
-                                <PaymentForm
-                                    clientSecret={clientSecret}
-                                    onSuccess={() => {
-                                        showSnackbar('Payment successful!', 'success');
-                                        fetch(`${process.env.REACT_APP_API_URL}/orders/${selectedOrder.id}/process-payment`, {
-                                            method: 'POST',
-                                            headers: {
-                                                'Authorization': `Bearer ${token}`,
-                                            }
-                                        }).then(res => res.json())
-                                          .then(data => console.log('Order processed:', data));
-
-                                        setSelectedOrder(null);
-                                        setClientSecret(null);
-                                        handleGetOrders();
-                                    }}
-                                    onCancel={() => {
-                                        setSelectedOrder(null);
-                                        setClientSecret(null);
-                                    }}
-                                />
-                            </Elements>
-                        </div>
-                    </>
-                )}
-            </main>
-
-            <hr />
-
-            {/* Products Section */}
-            <section className="inventory-section">
-                <h2>Our Products</h2>
-                <div className="product-grid">
-                    {products.map(product => (
-                        <div key={product.id} className="product-card">
-                            {product.image_url && (
-                                <div className="product-image">
-                                  <img
-                                    src={product.image_url || '/images/placeholder-flower.jpg'}
-                                    alt={product.name}
-                                    onError={(e) => {
-                                      const img = e.target as HTMLImageElement;
-                                      img.src = '/images/placeholder-flower.jpg';
-                                    }}
-                                  />
+                                {/* Filter Buttons */}
+                                <div style={{
+                                    display: 'flex',
+                                    gap: '8px',
+                                    marginBottom: '16px',
+                                    flexWrap: 'wrap'
+                                }}>
+                                    <Button
+                                        variant={orderFilters.pending ? "contained" : "outlined"}
+                                        color="warning"
+                                        size="small"
+                                        onClick={() => toggleFilter('pending')}
+                                        aria-label="Toggle pending orders"
+                                    >
+                                        ⏳ Pending
+                                    </Button>
+                                    <Button
+                                        variant={orderFilters.paid ? "contained" : "outlined"}
+                                        color="info"
+                                        size="small"
+                                        onClick={() => toggleFilter('paid')}
+                                        aria-label="Toggle paid orders"
+                                    >
+                                        💳 Paid
+                                    </Button>
+                                    <Button
+                                        variant={orderFilters.processing ? "contained" : "outlined"}
+                                        color="info"
+                                        size="small"
+                                        onClick={() => toggleFilter('processing')}
+                                        aria-label="Toggle processing orders"
+                                    >
+                                        📦 Processing
+                                    </Button>
+                                    <Button
+                                        variant={orderFilters.completed ? "contained" : "outlined"}
+                                        color="success"
+                                        size="small"
+                                        onClick={() => toggleFilter('completed')}
+                                        aria-label="Toggle completed orders"
+                                    >
+                                        ✓ Completed
+                                    </Button>
+                                    <Button
+                                        variant={orderFilters.cancelled ? "contained" : "outlined"}
+                                        color="error"
+                                        size="small"
+                                        onClick={() => toggleFilter('cancelled')}
+                                        aria-label="Toggle cancelled orders"
+                                    >
+                                        ✗ Cancelled
+                                    </Button>
+                                    <Button
+                                        variant={orderFilters.payment_failed ? "contained" : "outlined"}
+                                        color="error"
+                                        size="small"
+                                        onClick={() => toggleFilter('payment_failed')}
+                                        aria-label="Toggle payment failed orders"
+                                    >
+                                        ⚠ Payment Failed
+                                    </Button>
                                 </div>
-                            )}
-                            <h3>{product.name}</h3>
-                            <p>{product.description}</p>
-                            <p className="price">${Number(product.price).toFixed(2)}</p>
-                            <p className="inventory" aria-label={`${product.inventory_count} items in stock`}>
-                                In stock: {product.inventory_count}</p>
-                            {token && (
-                                <Button
-                                    variant="contained"
-                                    color="primary"
-                                    onClick={() => addToCart(product.id)}
-                                    aria-label={`Add ${product.name} to cart for ${Number(product.price).toFixed(2)}`}
-                                >
-                                    Add to Cart
-                                </Button>
-                            )}
+
+                                {visibleOrders.length === 0 ? (
+                                    <p>No orders to display</p>
+                                ) : (
+                                    visibleOrders.map(order => (
+                                        <div key={order.id} className="order-card">
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                <h3>Order #{order.id}</h3>
+                                                {getStatusChip(order.status)}
+                                            </div>
+                                            <p><strong>Total: ${order.items.reduce((sum: number, item: any) =>
+                                                sum + (Number(item.price_at_purchase) * item.quantity), 0
+                                            ).toFixed(2)}</strong></p>
+
+                                            <div className="order-items">
+                                                {order.items.map((item: any, idx: number) => (
+                                                    <div key={item.id || idx} className="order-item">
+                                                        <span className="order-item-name">Product ID: {item.product_id}</span>
+                                                        <span className="order-item-qty">Qty: {item.quantity}</span>
+                                                        <span className="order-item-price">${Number(item.price_at_purchase).toFixed(2)}</span>
+                                                    </div>
+                                                ))}
+                                            </div>
+
+                                            {order.status === 'pending' && (
+                                                <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
+                                                    <Button
+                                                        variant="contained"
+                                                        color="success"
+                                                        fullWidth
+                                                        onClick={() => handlePayNow(order)}
+                                                        aria-label={`Pay now for order ${order.id} totaling ${order.items.reduce((sum: number, item: any) => 
+                                                            sum + (Number(item.price_at_purchase) * item.quantity), 0
+                                                        ).toFixed(2)}`}                                                >
+                                                        Pay Now
+                                                    </Button>
+                                                    <Button
+                                                        variant="outlined"
+                                                        color="error"
+                                                        fullWidth
+                                                        onClick={() => handleCancelOrder(order.id)}
+                                                        aria-label={`Cancel order ${order.id}`}
+                                                    >
+                                                        Cancel Order
+                                                    </Button>
+                                                </div>
+                                            )}
+                                        </div>
+                                    ))
+                                )}
+                            </div>
                         </div>
-                    ))}
-                </div>
-            </section>
-        </div>
+                    )}
+
+                    {/* Payment Modal */}
+                    {selectedOrder && clientSecret && (
+                        <>
+                            <div className="payment-modal-overlay"
+                                 onClick={() => {
+                                     setSelectedOrder(null);
+                                     setClientSecret(null);
+                                 }}
+                                 aria-label="Close payment modal"
+                                 role="button"
+                                 tabIndex={0}
+                            />
+                            <div className="payment-modal"
+                                role="dialog"
+                                aria-labelledby="payment-modal-title"
+                                aria-describedby="payment-modal-description"
+                            >
+                                <h3 id="payment-modal-title">Pay for Order #{selectedOrder.id}</h3>
+                                <p id="payment-modal-description" className="sr-only">
+                                    Enter your payment information to complete your order
+                                </p>
+
+                                <Elements stripe={stripePromise}>
+                                    <PaymentForm
+                                        clientSecret={clientSecret}
+                                        onSuccess={() => {
+                                            showSnackbar('Payment successful!', 'success');
+                                            fetch(`${process.env.REACT_APP_API_URL}/orders/${selectedOrder.id}/process-payment`, {
+                                                method: 'POST',
+                                                headers: {
+                                                    'Authorization': `Bearer ${token}`,
+                                                }
+                                            }).then(res => res.json())
+                                              .then(data => console.log('Order processed:', data));
+
+                                            setSelectedOrder(null);
+                                            setClientSecret(null);
+                                            handleGetOrders();
+                                        }}
+                                        onCancel={() => {
+                                            setSelectedOrder(null);
+                                            setClientSecret(null);
+                                        }}
+                                    />
+                                </Elements>
+                            </div>
+                        </>
+                    )}
+                </main>
+
+                <hr />
+
+                {/* Products Section */}
+                <section className="inventory-section">
+                    <h2>Our Products</h2>
+                    <div className="product-grid">
+                        {products.map(product => (
+                            <div key={product.id} className="product-card">
+                                {product.image_url && (
+                                    <div className="product-image">
+                                      <img
+                                        src={product.image_url || '/images/placeholder-flower.jpg'}
+                                        alt={product.name}
+                                        onError={(e) => {
+                                          const img = e.target as HTMLImageElement;
+                                          img.src = '/images/placeholder-flower.jpg';
+                                        }}
+                                      />
+                                    </div>
+                                )}
+                                <h3>{product.name}</h3>
+                                <p>{product.description}</p>
+                                <p className="price">${Number(product.price).toFixed(2)}</p>
+                                <p className="inventory" aria-label={`${product.inventory_count} items in stock`}>
+                                    In stock: {product.inventory_count}</p>
+                                {token && (
+                                    <Button
+                                        variant="contained"
+                                        color="primary"
+                                        onClick={() => addToCart(product.id)}
+                                        aria-label={`Add ${product.name} to cart for ${Number(product.price).toFixed(2)}`}
+                                    >
+                                        Add to Cart
+                                    </Button>
+                                )}
+                            </div>
+                        ))}
+                    </div>
+                </section>
+            </div>
+        </ErrorBoundary>
     );
 }
 

@@ -1,20 +1,27 @@
-# Use an official Node.js runtime as a parent image
+# frontend-web/Dockerfile
 FROM node:18-alpine
 
-# Set the working directory in the container
 WORKDIR /app
 
-# Copy package.json and package-lock.json to leverage Docker cache
+# Copy package files
 COPY package*.json ./
 
 # Install dependencies
-RUN npm install
+RUN npm ci --only=production
 
-# Copy the rest of the application source code
+# Copy source code
 COPY . .
 
-# Make port 3000 available to the world outside this container
-EXPOSE 3000
+# Set build-time environment variables
+ARG SPRINT_VERSION=sprint-4
+ENV REACT_APP_SPRINT_VERSION=$SPRINT_VERSION
 
-# Run the app when the container launches
-CMD ["npm", "start"]
+# Build the app
+RUN npm run build
+
+# Production stage
+FROM nginx:alpine
+COPY --from=0 /app/build /usr/share/nginx/html
+
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]
