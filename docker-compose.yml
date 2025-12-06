@@ -39,6 +39,9 @@ services:
   frontend:
     build:
       context: ./frontend-web
+      args:
+        REACT_APP_STRIPE_PUBLISHABLE_KEY: ${STRIPE_PUBLISHABLE_KEY}
+        REACT_APP_API_URL: http://localhost:8000
       dockerfile: Dockerfile
     ports:
       - "3000:80"
@@ -50,6 +53,7 @@ services:
       - REACT_APP_STRIPE_PUBLISHABLE_KEY=${STRIPE_PUBLISHABLE_KEY}
       - SPRINT_VERSION=sprint-4
       - REACT_APP_BACKTRACE_ENABLED=${BACKTRACE_ENABLED:-false}
+      - REACT_APP_API_URL=http://localhost:8000
     env_file:
       - .env
 

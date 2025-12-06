@@ -1,7 +1,10 @@
 import asyncio
 from datetime import timedelta
+
 from temporalio import workflow
 from temporalio.common import RetryPolicy
+
+from temporal_models import OrderFulfillmentInput
 
 with workflow.unsafe.imports_passed_through():
     from activities.order_activities import create_order_activity
@@ -22,9 +25,9 @@ class OrderProcessingWorkflow:
         self.is_paused = False
 
     @workflow.run
-    async def create_order_workflow(self, order_data: dict, user_id: int) -> dict:
+    async def create_order_workflow(self, input: OrderFulfillmentInput) -> dict:
         workflow.logger.info(f"\n{'=' * 50}")
-        workflow.logger.info(f"Creating order record for user: {user_id}, {len(order_data['items'])} items")
+        workflow.logger.info(f"Creating order record for user: {input.user_id}, {len(input.items)} items")
         workflow.logger.info(f"{'=' * 50}\n")
 
         try:
@@ -36,7 +39,7 @@ class OrderProcessingWorkflow:
             await self._wait_if_paused()
             order_dict: dict = await workflow.execute_activity(
                 create_order_activity,
-                args=[order_data, user_id],
+                input,
                 start_to_close_timeout=timedelta(minutes=5),
                 retry_policy=DEFAULT_RETRY_POLICY
             )

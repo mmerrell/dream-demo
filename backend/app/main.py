@@ -1,5 +1,7 @@
 import uuid
 from contextlib import asynccontextmanager
+from decimal import Decimal
+
 from fastapi import FastAPI, Depends, HTTPException, status, Request
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
@@ -15,6 +17,7 @@ from temporalio.exceptions import WorkflowAlreadyStartedError
 import crud, models, schemas, security, config
 import stripe
 
+from temporal_models import OrderFulfillmentInput, TemporalOrderItem
 from workflows.create_order import OrderProcessingWorkflow
 from workflows.process_payment import ProcessPaymentWorkflow
 from database import engine, get_db
@@ -164,15 +167,33 @@ def create_payment(request: schemas.PaymentIntentCreateRequest, db: Session = De
 @app.post("/orders/", response_model=schemas.WorkflowStartResponse)
 async def create_order(
         order: schemas.OrderCreate,
-        current_user: models.User = Depends(get_current_user)
+        current_user: models.User = Depends(get_current_user),
+        db: Session = Depends(get_db)  # Add this dependency
 ):
+    # Transform the order items to include prices from the database
+    temporal_items = []
+    for item in order.items:
+        # Look up the product to get its current price
+        product = db.query(models.Product).filter(models.Product.id == item.product_id).first()
+        if not product:
+            raise HTTPException(status_code=404, detail=f"Product {item.product_id} not found")
 
-    order_dict = order.dict()
+        temporal_items.append(TemporalOrderItem(
+            product_id=item.product_id,
+            quantity=item.quantity,
+            price=float(product.price)
+        ))
+
+    # Create the proper input for the workflow
+    workflow_input = OrderFulfillmentInput(
+        user_id=current_user.id,
+        items=temporal_items
+    )
 
     workflow_id = f"create-order-{current_user.id}-{uuid.uuid4()}"
     handle = await temporal_client.start_workflow(
         OrderProcessingWorkflow.create_order_workflow,
-        args=[order_dict, current_user.id],
+        workflow_input,
         id=workflow_id,
         task_queue="create-order-tasks",
     )

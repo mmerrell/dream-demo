@@ -22,9 +22,6 @@ class Product(ProductBase):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-# --- User Schemas ---
-
 class UserBase(BaseModel):
     email: EmailStr
 
@@ -37,9 +34,6 @@ class User(UserBase):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-# --- Token Schemas ---
-
 class Token(BaseModel):
     access_token: str
     token_type: str
@@ -48,13 +42,8 @@ class TokenData(BaseModel):
     email: Optional[str] = None
 
 
-# --- Payment Schemas ---
-
 class PaymentIntentCreateRequest(BaseModel):
     order_id: int
-
-
-# --- Order Schemas ---
 
 class OrderItemBase(BaseModel):
     product_id: int

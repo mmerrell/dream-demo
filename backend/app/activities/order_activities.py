@@ -7,7 +7,7 @@ import time
 import crud
 from database import SessionLocal
 from schemas import OrderCreate, OrderItemCreate
-from models import OrderFulfillmentInput
+from temporal_models import OrderFulfillmentInput
 
 SLEEP_TIME=1
 

@@ -120,9 +120,19 @@ const SprintBadge = () => {
   );
 };
 
+console.log('About to call loadStripe with:', process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY);
 const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY!);
+console.log('loadStripe result:', stripePromise);
 
 function App() {
+   useEffect(() => {
+      console.log('Stripe key check:', {
+        key: process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY,
+        keyLength: process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY?.length,
+        keyType: typeof process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY
+      });
+    }, []);
+
     // App State
     const [products, setProducts] = useState<Product[]>([]);
     const [cart, setCart] = useState<Map<number, number>>(new Map());

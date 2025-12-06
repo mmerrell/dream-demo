@@ -3,7 +3,7 @@ from datetime import timedelta
 from temporalio import workflow
 from temporalio.common import RetryPolicy
 
-from models import OrderFulfillmentInput, OrderFulfillmentResult, OrderStatus
+from temporal_models import OrderFulfillmentInput, OrderFulfillmentResult, OrderStatus
 
 with workflow.unsafe.imports_passed_through():
     from activities.order_activities import (
@@ -46,7 +46,7 @@ class OrderFulfillmentWorkflow:
             await self._wait_if_paused()
             await workflow.execute_activity(
                 create_order_activity,
-                args=[input],
+                input,
                 start_to_close_timeout=timedelta(minutes=5),
                 retry_policy=DEFAULT_RETRY_POLICY
             )
