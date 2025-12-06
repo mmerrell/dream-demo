@@ -8,7 +8,7 @@ output "sprint_urls" {
 output "instance_ips" {
   description = "Public IP addresses for each sprint instance"
   value = {
-    for sprint in var.sprints_to_deploy : sprint => aws_eip.dream_demo[sprint].public_ip
+    for sprint in var.sprints_to_deploy : sprint => aws_instance.dream_demo[sprint].public_ip
   }
 }
 
@@ -27,17 +27,16 @@ output "security_group_id" {
 output "ssh_commands" {
   description = "SSH commands to connect to each instance"
   value = {
-    for sprint in var.sprints_to_deploy : sprint => "ssh -i ~/.ssh/${var.key_name}.pem ec2-user@${aws_eip.dream_demo[sprint].public_ip}"
+    for sprint in var.sprints_to_deploy : sprint => "ssh -i ~/.ssh/${var.key_name}.pem ec2-user@${aws_instance.dream_demo[sprint].public_ip}"  }
   }
-}
 
 output "direct_urls" {
   description = "Direct IP-based URLs for troubleshooting"
   value = {
     for sprint in var.sprints_to_deploy : sprint => {
-      frontend = "http://${aws_eip.dream_demo[sprint].public_ip}:3000"
-      backend  = "http://${aws_eip.dream_demo[sprint].public_ip}:8000"
-      temporal = "http://${aws_eip.dream_demo[sprint].public_ip}:8080"
+      frontend = "http://${aws_instance.dream_demo[sprint].public_ip}:3000"
+      backend  = "http://${aws_instance.dream_demo[sprint].public_ip}:8000"
+      temporal = "http://${aws_instance.dream_demo[sprint].public_ip}:8080"
     }
   }
 }
@@ -45,7 +44,7 @@ output "direct_urls" {
 # Legacy outputs for backward compatibility
 output "instance_ip" {
   description = "Public IP address of the first instance (legacy)"
-  value = length(var.sprints_to_deploy) > 0 ? aws_eip.dream_demo[var.sprints_to_deploy[0]].public_ip : null
+  value = length(var.sprints_to_deploy) > 0 ? aws_instance.dream_demo[var.sprints_to_deploy[0]].public_ip : null
 }
 
 output "frontend_url" {

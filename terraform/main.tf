@@ -148,23 +148,6 @@ resource "aws_instance" "dream_demo" {
   }
 }
 
-# Elastic IPs for each sprint instance
-resource "aws_eip" "dream_demo" {
-  for_each = toset(var.sprints_to_deploy)
-
-  instance = aws_instance.dream_demo[each.key].id
-  domain   = "vpc"
-
-  # Add explicit dependency to prevent timing issues
-  depends_on = [aws_instance.dream_demo]
-
-  tags = {
-    Name    = "dream-demo-${each.key}-eip"
-    Sprint  = each.key
-    Project = "DreamDemo"
-  }
-}
-
 # Route 53 A records for each sprint
 resource "aws_route53_record" "sprint_records" {
   for_each = toset(var.sprints_to_deploy)
@@ -173,7 +156,7 @@ resource "aws_route53_record" "sprint_records" {
   name    = "${each.key}.${var.domain_name}"
   type    = "A"
   ttl     = "300"
-  records = [aws_eip.dream_demo[each.key].public_ip]
+  records = [aws_instance.dream_demo[each.key].public_ip]  # <-- CHANGED
 }
 
 # Wait for instances to be ready

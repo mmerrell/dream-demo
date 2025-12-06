@@ -7,7 +7,7 @@ variable "domain_name" {
 variable "sprints_to_deploy" {
   description = "List of sprints to deploy"
   type        = list(string)
-  default     = ["sprint-1", "sprint-2", "sprint-3"]
+  default     = ["sprint-1", "sprint-2", "sprint-3", "sprint-4"]
 }
 
 variable "aws_region" {
