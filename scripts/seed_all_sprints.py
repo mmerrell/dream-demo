@@ -10,7 +10,7 @@ SPRINTS = {
     "sprint-2": "http://sprint-2.dreamdemo.xyz:8000/products/", 
     "sprint-3": "http://sprint-3.dreamdemo.xyz:8000/products/",
     # Uncomment when sprint-4 is working:
-    # "sprint-4": "http://sprint-4.dreamdemo.xyz:8000/products/"
+    "sprint-4": "http://sprint-4.dreamdemo.xyz:8000/products/"
 }
 
 ADJECTIVES = ["Vibrant", "Classic", "Elegant", "Rustic", "Sunshine", "Midnight", "Enchanted", "Jubilant", "Serene", "Blushing", "Golden", "Winter"]
