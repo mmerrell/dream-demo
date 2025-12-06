@@ -143,6 +143,9 @@ stripe.api_key = config.STRIPE_SECRET_KEY
 
 @app.post("/create-payment-intent")
 def create_payment(request: schemas.PaymentIntentCreateRequest, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+    print(f"Received payment request: {request}")
+    print(f"Order ID: {request.order_id}")
+
     order = crud.get_order(db, order_id=request.order_id)
     if not order or order.owner_id != current_user.id:
         raise HTTPException(status_code=404, detail="Order not found")

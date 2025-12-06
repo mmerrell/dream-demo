@@ -54,7 +54,11 @@ export const getOrders = async (token: string): Promise<any[]> => {
 };
 
 export const createPaymentIntent = async (order_id: number, token: string): Promise<{ client_secret: string }> => {
-    const response = await axios.post(`${API_URL}/create-payment-intent`, { order_id }, {
+    console.log('Creating payment intent with order_id:', order_id);
+    const payload = { order_id };
+    console.log('Request payload:', payload);
+
+    const response = await axios.post(`${API_URL}/create-payment-intent`, payload, {
         headers: { Authorization: `Bearer ${token}` }
     });
     return response.data;
