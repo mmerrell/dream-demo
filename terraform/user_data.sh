@@ -139,7 +139,7 @@ services:
       REACT_APP_API_URL: http://$DOMAIN_NAME/api
       REACT_APP_STRIPE_PUBLISHABLE_KEY: $STRIPE_PUBLISHABLE_KEY
     ports:
-      - "3000:3000"
+      - "3000:80"
     depends_on:
       - backend
     restart: unless-stopped
@@ -238,7 +238,7 @@ services:
       REACT_APP_API_URL: http://$DOMAIN_NAME/api
       REACT_APP_STRIPE_PUBLISHABLE_KEY: $STRIPE_PUBLISHABLE_KEY
     ports:
-      - "3000:3000"
+      - "3000:80"
     depends_on:
       - backend
     restart: unless-stopped
