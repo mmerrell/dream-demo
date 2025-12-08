@@ -1,10 +1,10 @@
 # Dream Demo - E-Commerce Flower Shop
 
-A full-stack e-commerce application designed to demonstrate comprehensive testing capabilities with Sauce Labs. This project features automated infrastructure deployment, multiple sprint versions, and intentionally includes both working features and documented bugs to showcase real-world testing scenarios.
+A full-stack e-commerce application designed to demonstrate comprehensive testing capabilities. This project features automated infrastructure deployment, multiple sprint versions, and intentionally includes both working features and documented bugs to showcase real-world testing scenarios.
 
 ## 🎯 Project Goals
 
-This application serves as the ultimate demo for Sauce Labs testing features, showcasing:
+This application serves as the ultimate demo for UI testing features, showcasing:
 
 - **Complex Web Application Testing**: Multi-page flows, authentication, payments
 - **Infrastructure as Code**: Automated AWS deployment with Terraform
@@ -195,10 +195,24 @@ docker-compose exec backend python seed_database.py
 - ✅ Better error handling
 
 ### Sprint-3: Advanced Workflows (Planned)
-- 🚧 Temporal workflow integration
-- 🚧 Kafka event streaming
-- 🚧 Enhanced observability
+- ✅ Temporal workflow integration
+- ✅ Enhanced observability
+- ✅ Removal of ugly modals
+- ✅ Bug fixes
+
+### Sprint-4: UI Improvements
+- ✅ Proper fly-out Shopping Cart drawer
+- ✅ Order cards
+- ✅ Improved product cards
+- ✅ Big improvements to Temporal data flow
+- ✅ Terraform improvements (Docker, nginx, etc)
+
+### Sprint-5: Advanced Infrastructure, More UI, Inventory System
+- 🚧 Cleaning up bugs introduced with shopping cart/order cards
+- 🚧 Native Android App
+- 🚧 First Cut of an Inventory System
 - 🚧 Additional payment methods
+- 🚧 Kafka event streaming
 
 ## 🏗️ Architecture
 
@@ -207,15 +221,17 @@ docker-compose exec backend python seed_database.py
 - **Backend**: Python FastAPI with SQLAlchemy ORM
 - **Database**: PostgreSQL 15
 - **Payment**: Stripe (test mode)
+- **Workflow**: Temporal
 - **Infrastructure**: AWS EC2, Terraform
 - **CI/CD**: GitHub Actions
-- **Containerization**: Docker with multi-platform builds
+- **Containerization**: Docker (and docker-compose) with multi-platform builds
 
 **Production Architecture:**
 ```
 Internet → Elastic IP → EC2 Instance
                        ├── Frontend Container (Port 3000)
-                       ├── Backend Container (Port 8000) 
+                       ├── Backend Container (Port 8000)
+                       ├── Temporal Cluster (Ports 7233 (API) & 8080 (UI)) 
                        └── PostgreSQL Container (Port 5432)
 ```
 
@@ -293,7 +309,7 @@ docker-compose logs -f backend
 docker-compose build --no-cache
 ```
 
-## 📋 Testing with Sauce Labs
+## 📋 Testing
 
 ### Test Scenarios Available
 
@@ -393,16 +409,21 @@ docker-compose logs
 ## 📝 Support
 
 For technical support or questions about this demo:
-- **Internal Slack:** #demo-support  
 - **Technical Issues:** Create GitHub issue
 - **Infrastructure Questions:** Contact DevOps team
 
 ## 📄 License
 
-Internal use only - Sauce Labs, Inc.
+## 🤝 Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed development guidelines, coding standards, and submission process.
+
+## 📝 License
+
+MIT License - see [LICENSE](LICENSE) for details.
 
 ---
 
 *This demo showcases modern DevOps practices with Infrastructure as Code, automated 
-deployment pipelines, and comprehensive testing capabilities for demonstrating Sauce 
-Labs platform features.*
+deployment pipelines, and comprehensive testing capabilities for developing smart 
+and adaptive test strategies platform features.*
