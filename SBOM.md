@@ -2,9 +2,9 @@
 
 **Project:** DreamDemo Flower Shop  
 **Version:** 0.0.1 (Sprint 1)  
-**Organization:** Sauce Labs  
-**License:** Apache-2.0  
-**Generated:** 2025-11-03  
+**Organization:** dreamdemo.xyz  
+**License:** MIT 
+**Generated:** 2025-11-03
 **Format:** CycloneDX 1.5
 
 ## Overview
@@ -106,6 +106,3 @@ This SBOM is compliant with:
 - NTIA Minimum Elements for SBOM
 - Executive Order 14028 requirements
 
-## Contact
-Sauce Labs Demo Team  
-https://saucelabs.com

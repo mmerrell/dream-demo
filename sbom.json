@@ -26,15 +26,15 @@
         }
       ],
       "supplier": {
-        "name": "Sauce Labs",
-        "url": ["https://saucelabs.com"]
+        "name": "dreamdemo.xyz",
+        "url": ["https://www.dreamdemo.xyz"]
       },
-      "author": "Sauce Labs Demo Team",
-      "purl": "pkg:github/saucelabs/dreamdemo-flower-shop@0.0.1"
+      "author": "Marcus Merrell",
+      "purl": "pkg:github/mmerrell/dream-demo"
     },
     "manufacture": {
-      "name": "Sauce Labs",
-      "url": ["https://saucelabs.com"]
+      "name": "dreamdemo.xyz",
+      "url": ["https://www.dreamdemo.xyz"]
     }
   },
   "components": [

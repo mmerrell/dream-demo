@@ -233,9 +233,13 @@ This application is specifically designed to showcase:
 
 This is an internal demo project. For questions or suggestions, contact the Sauce Labs demo team.
 
+## 🤝 Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed development guidelines, coding standards, and submission process.
+
 ## 📝 License
 
-Internal use only - Sauce Labs, Inc.
+MIT License - see [LICENSE](LICENSE) for details.
 
 ## 🆘 Troubleshooting
 
@@ -273,5 +277,4 @@ lsof -i :3000
 
 For technical support or questions about this demo:
 - Internal Wiki: [link-to-wiki]
-- Slack: #demo-support
-- Email: demo-team@saucelabs.com
+
