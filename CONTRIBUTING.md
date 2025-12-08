@@ -36,9 +36,6 @@ DreamDemo simulates authentic software evolution from "Dreadful" to "Magical" ac
    
    **Hybrid Development (faster iteration):**
    ```bash
-   # Start backend services
-   docker-compose up db temporal temporal-ui -d
-   
    # Frontend development
    cd frontend-web && npm install && npm start
    
@@ -120,13 +117,6 @@ def create_order(
     db: Session = Depends(get_db),
     current_user: models.User = Depends(get_current_user)
 ) -> models.Order:
-
-# Include proper error handling
-try:
-    result = await temporal_client.execute_workflow(...)
-except Exception as e:
-    logger.error(f"Workflow execution failed: {e}")
-    raise HTTPException(status_code=500, detail="Order processing failed")
 ```
 
 ### Testing Requirements

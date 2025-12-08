@@ -1,10 +1,10 @@
 # Dream Demo - E-Commerce Flower Shop
 
-A full-stack e-commerce application designed to demonstrate comprehensive testing capabilities with Sauce Labs. This project intentionally includes both working features and documented bugs to showcase real-world testing scenarios.
+A full-stack e-commerce application designed to demonstrate comprehensive testing capabilities. This project intentionally includes both working features and documented bugs to showcase real-world testing scenarios.
 
 ## 🎯 Project Goals
 
-This application serves as the ultimate demo for Sauce Labs testing features, showcasing:
+This application serves as the ultimate demo for developing adaptive test strategies, showcasing:
 
 - **Complex Web Application Testing**: Multi-page flows, authentication, payments
 - **Third-Party Integrations**: Stripe payments, future support for Venmo, CashApp
@@ -315,7 +315,7 @@ docker-compose down -v
 - [ ] Retry logic and circuit breakers
 - [ ] Graceful degradation patterns
 
-## 🎯 Sauce Labs Integration
+## 🎯 UI Test Integration
 
 This application is specifically designed to showcase:
 
@@ -330,11 +330,11 @@ This application is specifically designed to showcase:
 
 ## 🤝 Contributing
 
-This is an internal demo project. For questions or suggestions, contact the Sauce Labs demo team.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed development guidelines, coding standards, and submission process.
 
 ## 📝 License
 
-Internal use only - Sauce Labs, Inc.
+MIT License - see [LICENSE](LICENSE) for details.
 
 ## 🆘 Troubleshooting
 
@@ -372,8 +372,6 @@ lsof -i :3000
 
 For technical support or questions about this demo:
 - Internal Wiki: [link-to-wiki]
-- Slack: #demo-support
-- Email: demo-team@saucelabs.com
 
 ## Quick Start with Public Images
 
@@ -397,4 +395,3 @@ For technical support or questions about this demo:
 4. **Access the application:**
    - Frontend: http://localhost:3000
    - Backend API: http://localhost:8000
-   - Temporal UI: http://localhost:8080
