@@ -20,4 +20,11 @@
 4. **Access the application:**
    - Frontend: http://localhost:3000
    - Backend API: http://localhost:8000
-   - Temporal UI: http://localhost:8080
+
+## 🤝 Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed development guidelines, coding standards, and submission process.
+
+## 📝 License
+
+MIT License - see [LICENSE](LICENSE) for details.
