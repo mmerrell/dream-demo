@@ -31,31 +31,19 @@ systemctl start nginx
 systemctl enable nginx
 
 # Create nginx configuration
-# Uses Docker service names (backend, frontend) instead of IPs so it works across container restarts
+# Uses localhost for upstreams since containers expose ports to the host
 cat > /etc/nginx/conf.d/dream-demo.conf << EOF
 upstream frontend {
-    server frontend:3000;
+    server localhost:3000;
 }
 
 upstream backend {
-    server backend:8000;
+    server localhost:8000;
 }
 
 server {
-    listen 80 default_server;
-    server_name _;
-
-    location / {
-        proxy_pass http://frontend;
-        proxy_set_header Host \$host;
-        proxy_set_header X-Real-IP \$remote_addr;
-        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto \$scheme;
-
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade \$http_upgrade;
-        proxy_set_header Connection "upgrade";
-    }
+    listen 80;
+    server_name $DOMAIN_NAME;
 
     location /api/ {
         rewrite ^/api/(.*) /\$1 break;
@@ -89,11 +77,23 @@ server {
         proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto \$scheme;
     }
+
+    location / {
+        proxy_pass http://frontend;
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \$scheme;
+
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade \$http_upgrade;
+        proxy_set_header Connection "upgrade";
+    }
 }
 EOF
 
-# Remove default nginx config to avoid conflicts
-rm -f /etc/nginx/conf.d/default.conf
+# Disable default nginx config to avoid conflicts
+mv /etc/nginx/conf.d/default.conf /etc/nginx/conf.d/default.conf.disabled 2>/dev/null || true
 
 # Test and reload nginx
 nginx -t && systemctl reload nginx
