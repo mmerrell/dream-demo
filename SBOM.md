@@ -106,6 +106,3 @@ This SBOM is compliant with:
 - NTIA Minimum Elements for SBOM
 - Executive Order 14028 requirements
 
-## Contact
-Sauce Labs Demo Team  
-https://saucelabs.com
