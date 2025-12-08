@@ -14,7 +14,7 @@ echo "Starting deployment for $SPRINT_NAME at $DOMAIN_NAME"
 # Update system
 yum update -y
 
-# Install Docker and other dependencies (fix curl conflict)
+# Install Docker and other dependencies
 yum install -y docker git --allowerasing
 systemctl start docker
 systemctl enable docker
@@ -31,18 +31,19 @@ systemctl start nginx
 systemctl enable nginx
 
 # Create nginx configuration
+# Uses Docker service names (backend, frontend) instead of IPs so it works across container restarts
 cat > /etc/nginx/conf.d/dream-demo.conf << EOF
 upstream frontend {
-    server localhost:3000;
+    server frontend:3000;
 }
 
 upstream backend {
-    server localhost:8000;
+    server backend:8000;
 }
 
 server {
-    listen 80;
-    server_name $DOMAIN_NAME;
+    listen 80 default_server;
+    server_name _;
 
     location / {
         proxy_pass http://frontend;
@@ -80,11 +81,18 @@ server {
         proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto \$scheme;
     }
+
+    location /openapi.json {
+        proxy_pass http://backend/openapi.json;
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \$scheme;
+    }
 }
 EOF
 
-# Remove default nginx config
-rm -f /etc/nginx/sites-enabled/default
+# Remove default nginx config to avoid conflicts
 rm -f /etc/nginx/conf.d/default.conf
 
 # Test and reload nginx
@@ -95,7 +103,6 @@ mkdir -p /home/ec2-user/app
 cd /home/ec2-user/app
 
 # Create docker-compose file
-# After the existing variables section, add sprint-specific logic
 echo "Creating docker-compose file for $SPRINT_NAME..."
 
 if [ "$SPRINT_NAME" = "sprint-1" ] || [ "$SPRINT_NAME" = "sprint-2" ]; then
@@ -119,6 +126,7 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    restart: unless-stopped
 
   backend:
     image: $DOCKER_REGISTRY/dream-demo-backend:$SPRINT_NAME
@@ -139,7 +147,7 @@ services:
       REACT_APP_API_URL: http://$DOMAIN_NAME/api
       REACT_APP_STRIPE_PUBLISHABLE_KEY: $STRIPE_PUBLISHABLE_KEY
     ports:
-      - "3000:80"
+      - "3000:3000"
     depends_on:
       - backend
     restart: unless-stopped
@@ -169,6 +177,7 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    restart: unless-stopped
 
   temporal:
     image: temporalio/auto-setup:1.22.4
@@ -185,6 +194,7 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    restart: unless-stopped
 
   backend:
     image: $DOCKER_REGISTRY/dream-demo-backend:$SPRINT_NAME
@@ -209,9 +219,9 @@ services:
     command: python -B process_order_worker.py
     working_dir: /app/app
     environment:
-      DATABASE_URL: postgresql://dreamuser:dreampass@db:5432/dreamdemo  # Match your DB config
+      DATABASE_URL: postgresql://dreamuser:dreampass@db:5432/dreamdemo
       STRIPE_SECRET_KEY: $STRIPE_SECRET_KEY
-      TEMPORAL_ADDRESS: temporal:7233  # Match backend env var name
+      TEMPORAL_ADDRESS: temporal:7233
     depends_on:
       - db
       - temporal
@@ -238,7 +248,7 @@ services:
       REACT_APP_API_URL: http://$DOMAIN_NAME/api
       REACT_APP_STRIPE_PUBLISHABLE_KEY: $STRIPE_PUBLISHABLE_KEY
     ports:
-      - "3000:80"
+      - "3000:3000"
     depends_on:
       - backend
     restart: unless-stopped
@@ -261,7 +271,7 @@ EOF
 # Set ownership
 chown -R ec2-user:ec2-user /home/ec2-user/app
 
-# Pull and start services
+# Pull and start services (up -d pulls new images but doesn't recreate unless necessary)
 echo "Pulling Docker images for $SPRINT_NAME..."
 docker-compose pull
 
@@ -299,4 +309,6 @@ docker-compose --version
 touch /home/ec2-user/.user_data_complete
 
 echo "Deployment complete for $SPRINT_NAME at $DOMAIN_NAME"
-echo "Services available at http://$DOMAIN_NAME"
+echo "Frontend: http://$DOMAIN_NAME"
+echo "Backend API: http://$DOMAIN_NAME/api"
+echo "API Docs: http://$DOMAIN_NAME/docs"
