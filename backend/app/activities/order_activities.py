@@ -1,13 +1,20 @@
 import asyncio
+import os
 from datetime import datetime
+from typing import List
 
+import httpx
 from temporalio import activity
 import time
 
+from temporalio.exceptions import ActivityError
+
 import crud
+from config import INVENTORY_API_URL
 from database import SessionLocal
+from models import Order
 from schemas import OrderCreate, OrderItemCreate
-from temporal_models import OrderFulfillmentInput
+from temporal_models import OrderFulfillmentInput, OrderFulfillmentResult
 
 SLEEP_TIME=1
 
@@ -86,6 +93,31 @@ async def check_inventory_activity(order_id: int) -> bool:
         return await asyncio.to_thread(crud.check_inventory, db, order_id)
     finally:
         db.close()
+
+@activity.defn
+async def reserve_inventory_activity(order: OrderFulfillmentInput) -> List[str]:
+    reservation_ids = []
+    async with httpx.AsyncClient() as client:
+        try:
+            for product in order.items:
+                response = await client.post(
+                    f"{INVENTORY_API_URL}/reserve",
+                    json={
+                        "orderId": f"order-{order.order_id}",
+                        "productId": product.product_id,
+                        "quantity": product.quantity,
+                    }
+                )
+                if response.status_code == 201:
+                    reservation_ids.append(response.json()["reservationId"])
+                else:
+                    raise ActivityError(
+                        f"Insufficient inventory for product {product.product_id}: {response.json().get('message', response.text)}"
+                    )
+
+            return reservation_ids
+        except Exception as e:
+            raise ActivityError(f"Error reserving inventory: {e}")
 
 @activity.defn
 async def allocate_inventory_activity(order_id: int) -> dict:

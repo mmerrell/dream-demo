@@ -36,6 +36,36 @@ services:
     networks:
       - temporal-network
 
+  inventory:
+    build: ./inventory
+    ports:
+      - "8001:8001"
+    volumes:
+      - ./inventory/src:/app/src
+    environment:
+      - DATABASE_URL=postgresql://user:password@inventory-db/inventory_db
+      - SPRINT_VERSION="sprint-4"
+    env_file:
+      - .env
+    depends_on:
+      - inventory-db
+    networks:
+      - temporal-network
+    restart: unless-stopped
+
+  inventory-db:
+    image: postgres:15
+    volumes:
+      - inventory_postgres_data:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=inventory_db
+    ports:
+      - "5434:5432"
+    networks:
+      - temporal-network
+
   frontend:
     build:
       context: ./frontend-web
@@ -154,6 +184,7 @@ services:
 
 volumes:
   postgres_data:
+  inventory_postgres_data:
   temporal_postgres_data:
 
 networks:
@@ -161,5 +192,3 @@ networks:
     driver: bridge
   default:
     driver: bridge
-
-

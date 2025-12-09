@@ -31,6 +31,7 @@ class Order(Base):
     owner_id = Column(Integer, ForeignKey("users.id"))
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     status = Column(String, default="pending") # e.g., pending, paid, shipped, delivered
+    reservation_id = Column(String, nullable=True)  # Add this line
 
     owner = relationship("User", back_populates="orders")
     items = relationship("OrderItem", back_populates="order")

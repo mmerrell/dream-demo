@@ -5,6 +5,7 @@ import os
 # You can get your own test keys from the Stripe dashboard: https://dashboard.stripe.com/test/apikeys
 STRIPE_SECRET_KEY = os.getenv("STRIPE_SECRET_KEY", "")
 STRIPE_PUBLISHABLE_KEY = os.getenv("STRIPE_PUBLISHABLE_KEY", "YOUR_STRIPE_PUBLISHABLE_KEY")
+INVENTORY_API_URL = os.getenv("INVENTORY_API_URL", "http://localhost:8001")
 
 if not STRIPE_SECRET_KEY:
     print("WARNING: STRIPE_SECRET_KEY not set!")
