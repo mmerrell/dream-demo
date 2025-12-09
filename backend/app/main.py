@@ -7,9 +7,9 @@ from jose import jwt, JWTError
 
 from fastapi.middleware.cors import CORSMiddleware
 
-import crud, models, schemas, security, config
+from app import crud, models, schemas, security, config
+from app.database import engine, get_db
 import stripe
-from database import engine, get_db
 
 models.Base.metadata.create_all(bind=engine)
 

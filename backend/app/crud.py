@@ -2,7 +2,7 @@ from datetime import datetime
 
 from sqlalchemy.orm import Session
 from fastapi import HTTPException
-import models, schemas, security
+from app import models, schemas, security
 
 # --- Product CRUD ---
 
