@@ -328,6 +328,47 @@ This application is specifically designed to showcase:
 - **CI/CD integration**: Automated testing pipelines
 - **Test analytics**: Comprehensive test reporting and insights
 
+## 🤖 AI Integration with MCP
+
+The Dream Demo integrates Sauce Labs MCP (Model Context Protocol) servers to enable AI assistants to interact with Sauce Labs APIs:
+
+### Features
+
+- **Natural language queries**: Ask Claude Desktop or Gemini CLI about your tests
+- **Real-time device info**: "What Android devices are available in us-west-1?"
+- **Job analysis**: "Show my recent test failures and their logs"
+- **Build monitoring**: "How did build DreamDemo-Android-Build-1 perform?"
+- **Test asset retrieval**: "Download the video and logs for failed job 12345"
+
+### Setup
+
+See [MCP_SETUP.md](./MCP_SETUP.md) for complete installation and configuration instructions.
+
+Quick start:
+```bash
+# Install MCP servers (already installed)
+pipx install sauce-api-mcp
+
+# Configure Claude Desktop or Gemini CLI
+# (configs already set up for this machine)
+```
+
+### Usage Examples
+
+Once configured, ask your AI assistant:
+- "List available iPhone models for testing"
+- "What was the pass rate for my last 10 RDC jobs?"
+- "Get the logs for the most recent failed Android test"
+- "Compare test duration trends across builds"
+
+All query results are sourced directly from your Sauce Labs account in real-time.
+
+### Related Files
+
+- `MCP_SETUP.md` - Full setup and troubleshooting guide
+- `scripts/verify-mcp-setup.sh` - Verification script
+- `.env.template` - Include SAUCE_USERNAME and SAUCE_ACCESS_KEY
+
 ## 🤝 Contributing
 
 This is an internal demo project. For questions or suggestions, contact the Sauce Labs demo team.
