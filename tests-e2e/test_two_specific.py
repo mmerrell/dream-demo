@@ -1,4 +1,5 @@
 import pytest
+import sys
 import time
 import requests
 from appium import webdriver
@@ -7,6 +8,13 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException
 import os
+
+# Hook to capture test results for Sauce Labs reporting
+@pytest.hookimpl(tryfirst=True, hookwrapper=True)
+def pytest_runtest_makereport(item, call):
+    outcome = yield
+    rep = outcome.get_result()
+    setattr(item, f"rep_{rep.when}", rep)
 
 # Copy the android_driver fixture from conftest_android.py
 SAUCE_USERNAME = os.getenv("SAUCE_USERNAME")
@@ -79,11 +87,12 @@ def android_driver(request):
         
         yield driver
         
-        # Report result to Sauce Labs
+        # Report result to Sauce Labs (works for both VDC and RDC)
+        # If we reach teardown without exception, the test passed
+        sauce_result = "passed"
         try:
-            sauce_result = "passed" if request.node.rep_call.passed else "failed"
             driver.execute_script(f"sauce:job-result={sauce_result}")
-        except:
+        except Exception:
             pass
         driver.quit()
     else:

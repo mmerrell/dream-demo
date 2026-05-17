@@ -1,4 +1,5 @@
 import pytest
+import requests
 from appium import webdriver
 from appium.options.android import UiAutomator2Options
 import os
@@ -118,11 +119,33 @@ def android_driver_sauce(request):
         options=options
     )
     
+    session_id = driver.session_id
     yield driver
     
-    # Report test result to Sauce Labs
-    sauce_result = "passed" if request.node.rep_call.passed else "failed"
-    driver.execute_script(f"sauce:job-result={sauce_result}")
+    # Report test result to Sauce Labs (works for both VDC and RDC)
+    try:
+        sauce_result = "passed" if request.node.rep_call.passed else "failed"
+        
+        # For VDC: use execute_script
+        try:
+            driver.execute_script(f"sauce:job-result={sauce_result}")
+        except:
+            pass
+        
+        # For RDC: use the RDC REST API endpoint
+        try:
+            resp = requests.put(
+                f"https://api.us-west-1.saucelabs.com/v1/rdc/jobs/{driver.session_id}",
+                auth=(SAUCE_USERNAME, SAUCE_ACCESS_KEY),
+                json={"passed": sauce_result == "passed"},
+                timeout=5
+            )
+            print(f"[Sauce RDC] Job {driver.session_id} marked as {sauce_result}: {resp.status_code}")
+        except Exception as e:
+            print(f"[Sauce RDC] Failed to update job {driver.session_id}: {e}")
+    except Exception:
+        pass
+    
     driver.quit()
 
 
@@ -169,11 +192,28 @@ def android_driver(request):
         
         yield driver
         
-        # Report result to Sauce Labs
+        # Report result to Sauce Labs (works for both VDC and RDC)
         try:
             sauce_result = "passed" if request.node.rep_call.passed else "failed"
-            driver.execute_script(f"sauce:job-result={sauce_result}")
-        except:
+            
+            # For VDC: use execute_script
+            try:
+                driver.execute_script(f"sauce:job-result={sauce_result}")
+            except:
+                pass
+            
+            # For RDC: use the RDC REST API endpoint
+            try:
+                resp = requests.put(
+                    f"https://api.us-west-1.saucelabs.com/v1/rdc/jobs/{driver.session_id}",
+                    auth=(SAUCE_USERNAME, SAUCE_ACCESS_KEY),
+                    json={"passed": sauce_result == "passed"},
+                    timeout=5
+                )
+                print(f"[Sauce RDC] Job {driver.session_id} marked as {sauce_result}: {resp.status_code}")
+            except Exception as e:
+                print(f"[Sauce RDC] Failed to update job {driver.session_id}: {e}")
+        except Exception:
             pass
         driver.quit()
     else:
