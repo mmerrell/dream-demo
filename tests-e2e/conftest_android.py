@@ -48,6 +48,9 @@ def get_sauce_options(test_name: str, device_name: str) -> UiAutomator2Options:
     options.device_name = device_name
     options.automation_name = "UiAutomator2"
     
+    # Auto-grant Android permissions so "Allow" popups never appear
+    options.set_capability("autoGrantPermissions", True)
+    
     # Sauce Labs specific options
     sauce_options = {
         "username": SAUCE_USERNAME,

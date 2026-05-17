@@ -33,6 +33,9 @@ def get_sauce_options(test_name: str, device_name: str) -> UiAutomator2Options:
     options.device_name = device_name
     options.automation_name = "UiAutomator2"
     
+    # Auto-grant Android permissions so "Allow" popups never appear
+    options.set_capability("autoGrantPermissions", True)
+    
     # Sauce Labs specific options
     sauce_options = {
         "username": SAUCE_USERNAME,
@@ -285,7 +288,7 @@ class TestHomeScreen:
         if token:
             # attempt to set token via Appium mobile shell broadcast (works on emulators or devices supporting shell)
             try:
-                android_driver.execute_script('mobile: shell', { 'command': 'am', 'args': ['broadcast','-a','com.example.flowershop.SET_TEST_TOKEN','--es']['token', token] })
+                android_driver.execute_script('mobile: shell', { 'command': 'am', 'args': ['broadcast','-a','com.example.flowershop.SET_TEST_TOKEN','--es','token', token] })
             except Exception:
                 pass
 

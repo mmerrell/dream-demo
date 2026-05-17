@@ -6,6 +6,9 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException
 
+# Import the android_driver fixture
+pytest_plugins = ["conftest_android"]
+
 def _perform_login(android_driver, email, password):
     wait = WebDriverWait(android_driver, 10)
 
