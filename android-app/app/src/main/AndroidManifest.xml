@@ -26,7 +26,13 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-    </application>
+        <!-- Debug broadcast receiver to allow tests to inject auth token via adb -->
+    <receiver android:name="com.example.flowershop.testutils.TestTokenReceiver" android:exported="true">
+        <intent-filter>
+            <action android:name="com.example.flowershop.SET_TEST_TOKEN" />
+        </intent-filter>
+    </receiver>
+</application>
 
 </manifest>
 

@@ -11,7 +11,7 @@ A modern Android e-commerce application for a flower shop, built with Kotlin and
 - 💳 **Stripe Payment Integration**: Secure payment processing using Stripe
 - 🎨 **Modern UI**: Built with Jetpack Compose and Material 3 Design
 
-## Tech Stack
+**## Tech Stack**
 
 - **Language**: Kotlin
 - **UI Framework**: Jetpack Compose

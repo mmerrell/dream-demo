@@ -22,8 +22,10 @@ android {
             useSupportLibrary = true
         }
         
-        // Backend API URL - change this to your backend URL
-        buildConfigField("String", "API_BASE_URL", "\"http://10.0.2.2:8000\"")
+        // Backend API URL - can be overridden with -PAPI_BASE_URL
+        val apiBaseUrl: String by project
+        val resolvedApiBaseUrl = if (project.hasProperty("API_BASE_URL")) project.property("API_BASE_URL").toString() else "http://10.0.2.2:8000"
+        buildConfigField("String", "API_BASE_URL", "\"$resolvedApiBaseUrl\"")
         // Stripe publishable key - add your Stripe key
         buildConfigField("String", "STRIPE_PUBLISHABLE_KEY", "\"pk_test_51QRUibAViGdJ9XMj6GGsZxkjTZ8MjdJXwFn2zEeGOvgZDT0YZQX7EVjAV9cOhVzF6vXHY0Qg0XWDH2DPLD0Kprqz00OhxLGJC1\"")
     }

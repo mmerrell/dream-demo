@@ -1,0 +1,20 @@
+{
+  "mcpServers": {
+    "sauce-api-mcp-core": {
+      "command": "/Users/adam.toth-fejel/.local/bin/sauce-api-mcp",
+      "env": {
+        "SAUCE_USERNAME": "${SAUCE_USERNAME}",
+        "SAUCE_ACCESS_KEY": "${SAUCE_ACCESS_KEY}",
+        "SAUCE_REGION": "us-west-1"
+      }
+    },
+    "sauce-api-mcp-rdc": {
+      "command": "/Users/adam.toth-fejel/.local/bin/sauce-api-mcp-rdc",
+      "env": {
+        "SAUCE_USERNAME": "${SAUCE_USERNAME}",
+        "SAUCE_ACCESS_KEY": "${SAUCE_ACCESS_KEY}",
+        "SAUCE_REGION": "us-west-1"
+      }
+    }
+  }
+}

@@ -1,3 +1,6 @@
 pytest
 selenium
 webdriver-manager
+
+# Mobile testing
+Appium-Python-Client>=3.0.0
