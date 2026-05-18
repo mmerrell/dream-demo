@@ -19,7 +19,7 @@ if [ -z "$NAME" ] || [ -z "$INTENT" ]; then
 fi
 
 # 1. Request generation
-PAYLOAD=$(jq -n --arg name "$NAME" --arg intent "$INTENT" '{
+PAYLOAD=$(jq -n --arg name "$NAME" --arg intent "$INTENT" --arg tunnel "${SAUCE_TUNNEL_NAME:-}" '{
   name: $name,
   runSettings: {
     target: {
@@ -44,10 +44,13 @@ PAYLOAD=$(jq -n --arg name "$NAME" --arg intent "$INTENT" '{
             "profile.default_content_setting_values.window_placement": 2,
             "profile.default_content_setting_values.popups": 2
           }
+        },
+        "sauce:options": {
+          "tunnelIdentifier": $tunnel
         }
       }
     },
-    testUrl: "https://a71115e57f33e88c-184-23-57-194.serveousercontent.com/"
+    testUrl: "http://localhost:3000/"
   },
   promptSettings: { intent: $intent }
 }')
@@ -82,3 +85,13 @@ done
 RUN_PAYLOAD=$(jq -n --arg build "$BUILD_NAME" '{buildName: $build}')
 RUN_RESP=$(curl -s -u "$SAUCE_USERNAME:$SAUCE_ACCESS_KEY" -H "Content-Type: application/json" -d "$RUN_PAYLOAD" "$API_HOST/v1/ai-authoring/testcases/$TESTCASE_ID/run")
 echo "$RUN_RESP" | jq .
+
+# Extract job ID and wait for completion
+JOB_ID=$(echo "$RUN_RESP" | jq -r '.data.jobs[0].id // empty')
+if [ -n "$JOB_ID" ]; then
+  echo ""
+  echo "Job ID: $JOB_ID"
+  echo "Waiting ~90s for test to complete before shutting down tunnel..."
+  sleep 90
+  echo "Done waiting. Check https://app.saucelabs.com/tests/ for results."
+fi
