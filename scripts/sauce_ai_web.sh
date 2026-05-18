@@ -82,3 +82,13 @@ done
 RUN_PAYLOAD=$(jq -n --arg build "$BUILD_NAME" '{buildName: $build}')
 RUN_RESP=$(curl -s -u "$SAUCE_USERNAME:$SAUCE_ACCESS_KEY" -H "Content-Type: application/json" -d "$RUN_PAYLOAD" "$API_HOST/v1/ai-authoring/testcases/$TESTCASE_ID/run")
 echo "$RUN_RESP" | jq .
+
+# Extract job ID and wait for completion
+JOB_ID=$(echo "$RUN_RESP" | jq -r '.data.jobs[0].id // empty')
+if [ -n "$JOB_ID" ]; then
+  echo ""
+  echo "Job ID: $JOB_ID"
+  echo "Waiting ~90s for test to complete before shutting down tunnel..."
+  sleep 90
+  echo "Done waiting. Check https://app.saucelabs.com/tests/ for results."
+fi
