@@ -28,10 +28,21 @@ PAYLOAD=$(jq -n --arg name "$NAME" --arg intent "$INTENT" '{
         platformName: "Windows 11",
         browserVersion: "latest",
         "goog:chromeOptions": {
-          args: ["--disable-notifications", "--disable-geolocation"],
+          args: ["--disable-notifications", "--disable-geolocation", "--disable-features=PrivacySandbox,MediaRouter,OptimizationHints,Translate,PermissionBubble,SitePerProcess", "--disable-popup-blocking", "--disable-infobars"],
           prefs: {
             "profile.default_content_setting_values.notifications": 2,
-            "profile.default_content_setting_values.geolocation": 2
+            "profile.default_content_setting_values.geolocation": 2,
+            "profile.default_content_setting_values.media_stream": 2,
+            "profile.default_content_setting_values.media_stream_mic": 2,
+            "profile.default_content_setting_values.media_stream_camera": 2,
+            "profile.default_content_setting_values.protocol_handlers": 2,
+            "profile.default_content_setting_values.serial": 2,
+            "profile.default_content_setting_values.usb": 2,
+            "profile.default_content_setting_values.hid": 2,
+            "profile.default_content_setting_values.bluetooth": 2,
+            "profile.default_content_setting_values.file_system": 2,
+            "profile.default_content_setting_values.window_placement": 2,
+            "profile.default_content_setting_values.popups": 2
           }
         }
       }
