@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<testsuites name="Flower Shop - Chromium" tests="4" failures="4" skipped="0" errors="0" time="96.637">
+    <testsuite name="flower-shop.spec.js" timestamp="2026-06-05T00:52:20.442Z" hostname="chromium" tests="4" failures="4" skipped="0" time="96.637" errors="0" id="0">
+        <testcase name="Flower Shop - Auth Flow › page loads with Flower Shop branding" classname="flower-shop.spec.js" time="6.187">
+            <failure message="flower-shop.spec.js:21:3 page loads with Flower Shop branding" type="FAILURE"><![CDATA[]]></failure>
+            <system-out><![CDATA[
+[[ATTACHMENT|test-results\flower-shop-Flower-Shop----3f80c-s-with-Flower-Shop-branding-chromium\test-failed-1.png]]
+
+[[ATTACHMENT|test-results\flower-shop-Flower-Shop----3f80c-s-with-Flower-Shop-branding-chromium\error-context.md]]
+]]></system-out>
+        </testcase>
+        <testcase name="Flower Shop - Auth Flow › user can register and then log in" classname="flower-shop.spec.js" time="30.155">
+            <failure message="flower-shop.spec.js:27:3 user can register and then log in" type="FAILURE"><![CDATA[]]></failure>
+            <system-out><![CDATA[
+[[ATTACHMENT|test-results\flower-shop-Flower-Shop----cbb5e-an-register-and-then-log-in-chromium\test-failed-1.png]]
+
+[[ATTACHMENT|test-results\flower-shop-Flower-Shop----cbb5e-an-register-and-then-log-in-chromium\error-context.md]]
+]]></system-out>
+        </testcase>
+        <testcase name="Flower Shop - Shopping Flow › add product to cart and place order" classname="flower-shop.spec.js" time="30.147">
+            <failure message="flower-shop.spec.js:64:3 add product to cart and place order" type="FAILURE"><![CDATA[]]></failure>
+            <system-out><![CDATA[
+[[ATTACHMENT|test-results\flower-shop-Flower-Shop----48559-uct-to-cart-and-place-order-chromium\test-failed-1.png]]
+
+[[ATTACHMENT|test-results\flower-shop-Flower-Shop----48559-uct-to-cart-and-place-order-chromium\error-context.md]]
+]]></system-out>
+        </testcase>
+        <testcase name="Flower Shop - Shopping Flow › logout returns to auth screen" classname="flower-shop.spec.js" time="30.148">
+            <failure message="flower-shop.spec.js:83:3 logout returns to auth screen" type="FAILURE"><![CDATA[]]></failure>
+            <system-out><![CDATA[
+[[ATTACHMENT|test-results\flower-shop-Flower-Shop----2dc7b-gout-returns-to-auth-screen-chromium\test-failed-1.png]]
+
+[[ATTACHMENT|test-results\flower-shop-Flower-Shop----2dc7b-gout-returns-to-auth-screen-chromium\error-context.md]]
+]]></system-out>
+        </testcase>
+        <properties>
+            <property name="platformName" value="Windows 11"/>
+            <property name="browserName"/>
+        </properties>
+    </testsuite>
+</testsuites>

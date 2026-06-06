@@ -328,6 +328,25 @@ This application is specifically designed to showcase:
 - **CI/CD integration**: Automated testing pipelines
 - **Test analytics**: Comprehensive test reporting and insights
 
+### saucectl vs. MCP: Device Discovery and Test Execution
+
+`saucectl` is the Sauce Labs test runner — it executes your tests on devices you specify, but it does **not** provide a way to browse or query the live Real Device Cloud (RDC) catalog. For example, you cannot run `saucectl list-devices` to see which Android models are currently available in `us-west-1`.
+
+This project bridges that gap with the **`sauce-api-mcp-rdc` MCP server**, which turns the Sauce Labs API into a conversational interface:
+
+| Capability | `saucectl` | `sauce-api-mcp-rdc` |
+|------------|-----------|---------------------|
+| Run tests on a known device | ✅ Define in `.sauce/config.yml` | ❌ Not a test runner |
+| Browse live RDC device catalog | ❌ No built-in command | ✅ `get_real_device_status` |
+| Check device availability, OS, resolution | ❌ Not supported | ✅ Natural language or direct tool call |
+| Download job logs/videos post-run | ✅ Via `artifacts.download` config | ✅ `get_specific_real_device_job_asset` |
+
+**Typical workflow:**
+1. **Discover** — Ask the MCP plugin (or call the API): *"What Android devices are available in us-west-1?"*
+2. **Configure** — Set the chosen device in your `.sauce/config.yml`, test script, or environment variables (`SAUCE_DEVICE_NAME`).
+3. **Execute** — Run `saucectl run` or `pytest` to launch tests on that device.
+4. **Analyze** — Query the MCP plugin again for job results, logs, and trends without opening the Sauce Labs dashboard.
+
 ## 🤖 AI Integration with MCP
 
 The Dream Demo integrates Sauce Labs MCP (Model Context Protocol) servers to enable AI assistants to interact with Sauce Labs APIs:

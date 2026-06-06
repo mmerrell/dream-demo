@@ -1,0 +1,156 @@
+{
+  "ai_insights_api_calls": [
+    {
+      "entry_index": 0,
+      "method": "GET",
+      "url": "wss://api.us-west-1.saucelabs.com/ai-assistant-gateway/v1/chat/ws/026317e4-810f-41f7-a7a0-22290502188e",
+      "status": 101,
+      "status_text": "Switching Protocols",
+      "started": "2026-05-21T18:47:38.868Z",
+      "duration_ms": 17577.23,
+      "request_headers": {
+        "Upgrade": "websocket",
+        "Origin": "https://app.saucelabs.com",
+        "Cache-Control": "no-cache",
+        "Accept-Language": "en-US,en;q=0.9",
+        "Pragma": "no-cache",
+        "Connection": "Upgrade",
+        "Sec-WebSocket-Key": "tZzIRe/MPwWBGPzPXqBXkw==",
+        "Accept-Encoding": "gzip, deflate, br, zstd",
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+        "Sec-WebSocket-Version": "13",
+        "Host": "api.us-west-1.saucelabs.com",
+        "Sec-WebSocket-Extensions": "permessage-deflate; client_max_window_bits"
+      },
+      "response_headers": {
+        "upgrade": "websocket",
+        "strict-transport-security": "max-age=63072000; includeSubDomains",
+        "x-request-id": "db2fb5ac-7700-4ddd-9dec-360de171d0a2",
+        "cache-control": "no-cache",
+        "connection": "Upgrade",
+        "access-control-allow-credentials": "true",
+        "access-control-allow-origin": "https://app.saucelabs.com",
+        "date": "Thu, 21 May 2026 18:47:38 GMT",
+        "sec-websocket-accept": "INoOx07BkpS5eyyl6y63CxslDOM=",
+        "server": "envoy",
+        "sec-websocket-extensions": "permessage-deflate"
+      },
+      "websocket_messages": [
+        {
+          "direction": "SEND",
+          "timestamp": 1779389261.157199,
+          "payload": {
+            "correlation_id": "026317e4-810f-41f7-a7a0-22290502188e",
+            "type": "prompt",
+            "name": "send_prompt",
+            "message_id": "efeda1d8-6d69-409d-a031-ec6726432957",
+            "payload": {
+              "timezone": "America/Los_Angeles",
+              "prompt": "What is the Error Rate trend over the past seven days and show me the top five errors by count.",
+              "filters": {
+                "start": "2026-04-22T07:00:00.000Z",
+                "end": "2026-05-22T07:00:00.000Z"
+              }
+            }
+          }
+        },
+        {
+          "direction": "RECEIVE",
+          "timestamp": 1779389274.222204,
+          "payload": {
+            "message_id": "c586a9a4e3d148e098783ad90a1a8d6a",
+            "name": "answer_received",
+            "correlation_id": "026317e4-810f-41f7-a7a0-22290502188e",
+            "causation_id": "efeda1d8-6d69-409d-a031-ec6726432957",
+            "payload": {
+              "response_state": "PROCESSING",
+              "data": [
+                {
+                  "widget_type": "text",
+                  "value": "Here's the error rate trend over the past seven days:"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "direction": "RECEIVE",
+          "timestamp": 1779389274.234858,
+          "payload": {
+            "message_id": "8bdaa6940c274b6c9457fd9071132c53",
+            "name": "answer_received",
+            "correlation_id": "026317e4-810f-41f7-a7a0-22290502188e",
+            "causation_id": "efeda1d8-6d69-409d-a031-ec6726432957",
+            "payload": {
+              "response_state": "PROCESSING",
+              "data": [
+                {
+                  "widget_type": "chart",
+                  "value": {
+                    "chart_type": "line",
+                    "dataKeys": ["errors"],
+                    "data": [
+                      {"name": "2026-05-15T00:00:00.000Z", "errors": 2.0},
+                      {"name": "2026-05-16T00:00:00.000Z", "errors": 2.0},
+                      {"name": "2026-05-17T00:00:00.000Z", "errors": 3.0},
+                      {"name": "2026-05-18T00:00:00.000Z", "errors": 1.0},
+                      {"name": "2026-05-19T00:00:00.000Z", "errors": 1.0},
+                      {"name": "2026-05-20T00:00:00.000Z", "errors": 4.0}
+                    ],
+                    "units": {
+                      "x_label": "Date",
+                      "y_label": "number"
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        },
+        {
+          "direction": "RECEIVE",
+          "timestamp": 1779389276.319847,
+          "payload": {
+            "message_id": "582fdc29821a45f884b875930f048744",
+            "name": "answer_received",
+            "correlation_id": "026317e4-810f-41f7-a7a0-22290502188e",
+            "causation_id": "efeda1d8-6d69-409d-a031-ec6726432957",
+            "payload": {
+              "response_state": "PROCESSING",
+              "data": [
+                {
+                  "widget_type": "text",
+                  "value": "The chart above shows the daily count of errors. There was a peak of 4 errors on May 20th, 2026.\n\nHere are the top five errors by count in the last seven days:\n\n| ERROR_TYPE                  | ERROR_COUNT |\n| :-------------------------- | :---------- |\n| Error starting appium session | 11          |"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "direction": "RECEIVE",
+          "timestamp": 1779389276.445955,
+          "payload": {
+            "message_id": "74e5884545384ecd9bba9a6ab35e7baf",
+            "name": "answer_received",
+            "correlation_id": "026317e4-810f-41f7-a7a0-22290502188e",
+            "causation_id": "efeda1d8-6d69-409d-a031-ec6726432957",
+            "payload": {
+              "response_state": "DONE",
+              "data": null
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "total_entries_in_har": 21,
+    "ai_insights_calls_found": 1,
+    "other_calls": [
+      "GET/OPTIONS /rest/v1.2/users/{userId}/concurrency",
+      "GET/OPTIONS /v1/rdc/concurrency",
+      "GET/OPTIONS /rest/v1/{userId}/tunnels",
+      "POST /v1/ld-relay/events/bulk/{id}"
+    ]
+  }
+}

@@ -1,0 +1,153 @@
+{
+  "status": "failed",
+  "attachments": [],
+  "suites": [
+    {
+      "name": "chromium",
+      "status": "failed",
+      "metadata": {},
+      "suites": [
+        {
+          "name": "flower-shop.spec.js",
+          "status": "failed",
+          "metadata": {},
+          "suites": [
+            {
+              "name": "Flower Shop - Auth Flow",
+              "status": "failed",
+              "metadata": {},
+              "suites": [],
+              "attachments": [],
+              "tests": [
+                {
+                  "name": "page loads with Flower Shop branding",
+                  "status": "failed",
+                  "duration": 6187,
+                  "output": "Error: expect(locator).toBeVisible() failed\n\nLocator: getByRole('heading', { name: /Flower Shop/i })\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n  - Expect \"toBeVisible\" with timeout 5000ms\n  - waiting for getByRole('heading', { name: /Flower Shop/i })\n:  undefined\n\nError: expect(locator).toBeVisible() failed\n\nLocator: getByRole('heading', { name: /Flower Shop/i })\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n  - Expect \"toBeVisible\" with timeout 5000ms\n  - waiting for getByRole('heading', { name: /Flower Shop/i })\n\n    at D:\\sauce-playwright-runner\\3.4.0\\bundle\\__project__\\tests-playwright\\flower-shop.spec.js:23:71\n    ",
+                  "startTime": "2026-06-05T00:52:22.955Z",
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "path": "test-failed-1.png",
+                      "contentType": "image/png"
+                    },
+                    {
+                      "name": "error-context",
+                      "path": "error-context.md",
+                      "contentType": "text/markdown"
+                    }
+                  ],
+                  "metadata": {
+                    "id": "72c266d7da8cd6913aa0-f63ae6fad1edbc69cecd"
+                  },
+                  "code": {
+                    "lines": [
+                      "await page.goto(BASE_URL);",
+                      "await expect(page.getByRole('heading', { name: /Flower Shop/i })).toBeVisible();"
+                    ]
+                  },
+                  "videoTimestamp": 8.955
+                },
+                {
+                  "name": "user can register and then log in",
+                  "status": "failed",
+                  "duration": 30155,
+                  "output": "Test timeout of 30000ms exceeded.:  undefined\n\nTest timeout of 30000ms exceeded.\n    ",
+                  "startTime": "2026-06-05T00:52:32.965Z",
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "path": "test-failed-1.png",
+                      "contentType": "image/png"
+                    },
+                    {
+                      "name": "error-context",
+                      "path": "error-context.md",
+                      "contentType": "text/markdown"
+                    }
+                  ],
+                  "metadata": {
+                    "id": "72c266d7da8cd6913aa0-3e4ab1c5bde0fe38d416"
+                  },
+                  "code": {
+                    "lines": [
+                      "await page.goto(BASE_URL);",
+                      "await registerForm.getByRole('textbox', { name: /Email address for registration/i }).fill(uniqueEmail);"
+                    ]
+                  },
+                  "videoTimestamp": 18.965
+                }
+              ]
+            },
+            {
+              "name": "Flower Shop - Shopping Flow",
+              "status": "failed",
+              "metadata": {},
+              "suites": [],
+              "attachments": [],
+              "tests": [
+                {
+                  "name": "add product to cart and place order",
+                  "status": "failed",
+                  "duration": 30147,
+                  "output": "Test timeout of 30000ms exceeded while running \"beforeEach\" hook.:  undefined\n\nTest timeout of 30000ms exceeded while running \"beforeEach\" hook.\n    at D:\\sauce-playwright-runner\\3.4.0\\bundle\\__project__\\tests-playwright\\flower-shop.spec.js:52:8\n    ",
+                  "startTime": "2026-06-05T00:53:06.298Z",
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "path": "test-failed-1.png",
+                      "contentType": "image/png"
+                    },
+                    {
+                      "name": "error-context",
+                      "path": "error-context.md",
+                      "contentType": "text/markdown"
+                    }
+                  ],
+                  "metadata": {
+                    "id": "72c266d7da8cd6913aa0-f5e009ed4c6c8ceb8c63"
+                  },
+                  "code": {
+                    "lines": []
+                  },
+                  "videoTimestamp": 52.298
+                },
+                {
+                  "name": "logout returns to auth screen",
+                  "status": "failed",
+                  "duration": 30148,
+                  "output": "Test timeout of 30000ms exceeded while running \"beforeEach\" hook.:  undefined\n\nTest timeout of 30000ms exceeded while running \"beforeEach\" hook.\n    at D:\\sauce-playwright-runner\\3.4.0\\bundle\\__project__\\tests-playwright\\flower-shop.spec.js:52:8\n    ",
+                  "startTime": "2026-06-05T00:53:39.522Z",
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "path": "test-failed-1.png",
+                      "contentType": "image/png"
+                    },
+                    {
+                      "name": "error-context",
+                      "path": "error-context.md",
+                      "contentType": "text/markdown"
+                    }
+                  ],
+                  "metadata": {
+                    "id": "72c266d7da8cd6913aa0-8c8632380d484f418c6e"
+                  },
+                  "code": {
+                    "lines": []
+                  },
+                  "videoTimestamp": 85.522
+                }
+              ]
+            }
+          ],
+          "attachments": [],
+          "tests": []
+        }
+      ],
+      "attachments": [],
+      "tests": []
+    }
+  ],
+  "metadata": {}
+}

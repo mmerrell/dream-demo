@@ -10,3 +10,4 @@ strawberry-graphql[fastapi]
 stripe
 email-validator
 requests
+websockets

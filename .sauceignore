@@ -12,3 +12,6 @@
 *.gif
 # Remove this to have node_modules uploaded with code
 node_modules/
+# Local artifacts and logs
+artifacts/
+*.log

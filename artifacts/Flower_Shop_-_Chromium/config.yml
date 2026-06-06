@@ -1,0 +1,36 @@
+apiVersion: v1alpha
+kind: playwright
+showConsoleLog: true
+sauce:
+  region: us-west-1
+  concurrency: 10
+  sauceignore: .sauceignore
+playwright:
+  version: 1.58.2
+  configFile: playwright.config.js
+suites:
+  - name: "Flower Shop - Chromium"
+    testMatch:
+      - "tests-playwright/.*.spec.js"
+    platformName: "Windows 11"
+    params:
+      browserName: chromium
+  - name: "Flower Shop - Firefox"
+    testMatch:
+      - "tests-playwright/.*.spec.js"
+    platformName: "Windows 11"
+    params:
+      browserName: firefox
+  - name: "Flower Shop - WebKit"
+    testMatch:
+      - "tests-playwright/.*.spec.js"
+    platformName: "macOS 13"
+    params:
+      browserName: webkit
+rootDir: .
+artifacts:
+  download:
+    match:
+      - "*"
+    when: always
+    directory: ./artifacts
