@@ -1,6 +1,7 @@
-# Demo Flow
+# Adam's Demo — Sauce AI Testing & Error Monitoring
 
-Demonstrates an end-to-end Sauce Labs testing workflow spanning multiple tools.
+End-to-end Sauce Labs demo: visual regression → real-device testing (RDC plugin) → error
+monitoring (Sauce Backtrace) → fix → test authoring → AI insights.
 Always begin with `docker-compose down -v` before switching branches to prevent port conflicts.
 
 ## Setup
